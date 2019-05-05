@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sk.gz.dao.QuotaMonthDAO">
+  <resultMap id="BaseResultMap" type="com.sk.gz.entity.QuotaMonth">
+    <id column="date" jdbcType="TIMESTAMP" property="date" />
+    <id column="plantId" jdbcType="INTEGER" property="plantid" />
+    <result column="powerGeneration" jdbcType="DOUBLE" property="powergeneration" />
+    <result column="downTimeReducation" jdbcType="DOUBLE" property="downtimereducation" />
+    <result column="powerReducation" jdbcType="DOUBLE" property="powerreducation" />
+    <result column="otherReducation" jdbcType="DOUBLE" property="otherreducation" />
+    <result column="downtime" jdbcType="BIGINT" property="downtime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    `date`, plantId, powerGeneration, downTimeReducation, powerReducation, otherReducation, 
+    downtime
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="com.sk.gz.entity.QuotaMonthKey" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from quota_month
+    where `date` = #{date,jdbcType=TIMESTAMP}
+      and plantId = #{plantid,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="com.sk.gz.entity.QuotaMonthKey">
+    delete from quota_month
+    where `date` = #{date,jdbcType=TIMESTAMP}
+      and plantId = #{plantid,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.sk.gz.entity.QuotaMonth">
+    insert into quota_month (`date`, plantId, powerGeneration, 
+      downTimeReducation, powerReducation, otherReducation, 
+      downtime)
+    values (#{date,jdbcType=TIMESTAMP}, #{plantid,jdbcType=INTEGER}, #{powergeneration,jdbcType=DOUBLE}, 
+      #{downtimereducation,jdbcType=DOUBLE}, #{powerreducation,jdbcType=DOUBLE}, #{otherreducation,jdbcType=DOUBLE}, 
+      #{downtime,jdbcType=BIGINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.sk.gz.entity.QuotaMonth">
+    insert into quota_month
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="date != null">
+        `date`,
+      </if>
+      <if test="plantid != null">
+        plantId,
+      </if>
+      <if test="powergeneration != null">
+        powerGeneration,
+      </if>
+      <if test="downtimereducation != null">
+        downTimeReducation,
+      </if>
+      <if test="powerreducation != null">
+        powerReducation,
+      </if>
+      <if test="otherreducation != null">
+        otherReducation,
+      </if>
+      <if test="downtime != null">
+        downtime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="date != null">
+        #{date,jdbcType=TIMESTAMP},
+      </if>
+      <if test="plantid != null">
+        #{plantid,jdbcType=INTEGER},
+      </if>
+      <if test="powergeneration != null">
+        #{powergeneration,jdbcType=DOUBLE},
+      </if>
+      <if test="downtimereducation != null">
+        #{downtimereducation,jdbcType=DOUBLE},
+      </if>
+      <if test="powerreducation != null">
+        #{powerreducation,jdbcType=DOUBLE},
+      </if>
+      <if test="otherreducation != null">
+        #{otherreducation,jdbcType=DOUBLE},
+      </if>
+      <if test="downtime != null">
+        #{downtime,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sk.gz.entity.QuotaMonth">
+    update quota_month
+    <set>
+      <if test="powergeneration != null">
+        powerGeneration = #{powergeneration,jdbcType=DOUBLE},
+      </if>
+      <if test="downtimereducation != null">
+        downTimeReducation = #{downtimereducation,jdbcType=DOUBLE},
+      </if>
+      <if test="powerreducation != null">
+        powerReducation = #{powerreducation,jdbcType=DOUBLE},
+      </if>
+      <if test="otherreducation != null">
+        otherReducation = #{otherreducation,jdbcType=DOUBLE},
+      </if>
+      <if test="downtime != null">
+        downtime = #{downtime,jdbcType=BIGINT},
+      </if>
+    </set>
+    where `date` = #{date,jdbcType=TIMESTAMP}
+      and plantId = #{plantid,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.sk.gz.entity.QuotaMonth">
+    update quota_month
+    set powerGeneration = #{powergeneration,jdbcType=DOUBLE},
+      downTimeReducation = #{downtimereducation,jdbcType=DOUBLE},
+      powerReducation = #{powerreducation,jdbcType=DOUBLE},
+      otherReducation = #{otherreducation,jdbcType=DOUBLE},
+      downtime = #{downtime,jdbcType=BIGINT}
+    where `date` = #{date,jdbcType=TIMESTAMP}
+      and plantId = #{plantid,jdbcType=INTEGER}
+  </update>
+</mapper>

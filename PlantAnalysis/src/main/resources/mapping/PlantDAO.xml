@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sk.gz.dao.PlantDAO">
+  <resultMap id="BaseResultMap" type="com.sk.gz.entity.Plant">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="stationId" jdbcType="INTEGER" property="stationid" />
+    <result column="powerRating" jdbcType="REAL" property="powerrating" />
+    <result column="cutInWindSpeed" jdbcType="REAL" property="cutinwindspeed" />
+    <result column="cutOffWindSpeed" jdbcType="REAL" property="cutoffwindspeed" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, `name`, stationId, powerRating, cutInWindSpeed, cutOffWindSpeed
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from plant
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from plant
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.sk.gz.entity.Plant">
+    insert into plant (id, `name`, stationId, 
+      powerRating, cutInWindSpeed, cutOffWindSpeed
+      )
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{stationid,jdbcType=INTEGER}, 
+      #{powerrating,jdbcType=REAL}, #{cutinwindspeed,jdbcType=REAL}, #{cutoffwindspeed,jdbcType=REAL}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.sk.gz.entity.Plant">
+    insert into plant
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="name != null">
+        `name`,
+      </if>
+      <if test="stationid != null">
+        stationId,
+      </if>
+      <if test="powerrating != null">
+        powerRating,
+      </if>
+      <if test="cutinwindspeed != null">
+        cutInWindSpeed,
+      </if>
+      <if test="cutoffwindspeed != null">
+        cutOffWindSpeed,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="stationid != null">
+        #{stationid,jdbcType=INTEGER},
+      </if>
+      <if test="powerrating != null">
+        #{powerrating,jdbcType=REAL},
+      </if>
+      <if test="cutinwindspeed != null">
+        #{cutinwindspeed,jdbcType=REAL},
+      </if>
+      <if test="cutoffwindspeed != null">
+        #{cutoffwindspeed,jdbcType=REAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sk.gz.entity.Plant">
+    update plant
+    <set>
+      <if test="name != null">
+        `name` = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="stationid != null">
+        stationId = #{stationid,jdbcType=INTEGER},
+      </if>
+      <if test="powerrating != null">
+        powerRating = #{powerrating,jdbcType=REAL},
+      </if>
+      <if test="cutinwindspeed != null">
+        cutInWindSpeed = #{cutinwindspeed,jdbcType=REAL},
+      </if>
+      <if test="cutoffwindspeed != null">
+        cutOffWindSpeed = #{cutoffwindspeed,jdbcType=REAL},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.sk.gz.entity.Plant">
+    update plant
+    set `name` = #{name,jdbcType=VARCHAR},
+      stationId = #{stationid,jdbcType=INTEGER},
+      powerRating = #{powerrating,jdbcType=REAL},
+      cutInWindSpeed = #{cutinwindspeed,jdbcType=REAL},
+      cutOffWindSpeed = #{cutoffwindspeed,jdbcType=REAL}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
