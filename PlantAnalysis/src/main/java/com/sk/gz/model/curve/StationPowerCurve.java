@@ -34,4 +34,6 @@ public class StationPowerCurve {
     @ApiModelProperty(value = "各状态点的比例")
     @JsonProperty("statistics")
     private StateStatistics stateStatistics;
+
+
 }

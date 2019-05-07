@@ -48,5 +48,14 @@ public class StationPreview {
     @JsonProperty("pba")
     private float pba;
 
-
+    public StationPreview(Date start, Date end, float powerGeneration, float reduction, float reductionRatio, float averageWindSpeed, float tba, float pba) {
+        this.start = start;
+        this.end = end;
+        this.powerGeneration = powerGeneration;
+        this.reduction = reduction;
+        this.reductionRatio = reductionRatio;
+        this.averageWindSpeed = averageWindSpeed;
+        this.tba = tba;
+        this.pba = pba;
+    }
 }

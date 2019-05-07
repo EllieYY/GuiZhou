@@ -1,5 +1,6 @@
 package com.sk.gz.controller;
 
+import com.sk.gz.dao.PlantDAO;
 import com.sk.gz.model.power.Availability;
 import com.sk.gz.model.power.MonthPlantPower;
 import com.sk.gz.model.power.PowerIndicators;
@@ -27,6 +28,7 @@ import java.util.List;
 public class PowerAnalysisController {
     @Resource
     PowerInfoService powerInfoService;
+
 
     @ApiOperation(value = "指标统计")
     @RequestMapping(value = "/power/indicators", method = {RequestMethod.GET, RequestMethod.POST})

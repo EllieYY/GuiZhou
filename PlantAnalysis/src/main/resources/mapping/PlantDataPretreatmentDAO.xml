@@ -5,8 +5,8 @@
     <id column="time" jdbcType="TIMESTAMP" property="time" />
     <id column="plantId" jdbcType="INTEGER" property="plantid" />
     <result column="duration" jdbcType="BIGINT" property="duration" />
-    <result column="state" jdbcType="TINYINT" property="state" />
-    <result column="powerState" jdbcType="TINYINT" property="powerstate" />
+    <result column="state" jdbcType="INTEGER" property="state" />
+    <result column="powerState" jdbcType="INTEGER" property="powerstate" />
     <result column="estimatePower" jdbcType="REAL" property="estimatepower" />
     <result column="reductivePower" jdbcType="REAL" property="reductivepower" />
     <result column="actualPower" jdbcType="REAL" property="actualpower" />
@@ -27,11 +27,25 @@
     where `time` = #{time,jdbcType=TIMESTAMP}
       and plantId = #{plantid,jdbcType=INTEGER}
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="com.sk.gz.entity.PlantDataPretreatmentKey">
+  <select id="findMaxByColumn" resultType="java.lang.Float">
+    SELECT max(${column})
+    FROM plant_data_pretreatment
+      WHERE plantId = #{plantId,jdbcType=INTEGER}
+  </select>
+    <select id="findByColumnAndRange" parameterType="com.sk.gz.model.converter.RangeParam" resultType="java.lang.Float">
+      SELECT ${column}
+        FROM plant_data_pretreatment
+        WHERE plantId = #{plantId,jdbcType=INTEGER}
+          and `state` = #{validState}
+          and ${column} &gt;= #{rangeMin}
+          and ${column} &lt; #{rangeMax}
+        Order by ${column} ASC
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="com.sk.gz.entity.PlantDataPretreatmentKey">
     delete from plant_data_pretreatment
     where `time` = #{time,jdbcType=TIMESTAMP}
       and plantId = #{plantid,jdbcType=INTEGER}
-  </delete>
+    </delete>
   <insert id="insert" parameterType="com.sk.gz.entity.PlantDataPretreatment">
     insert into plant_data_pretreatment (`time`, plantId, duration, 
       `state`, powerState, estimatePower, 
@@ -39,7 +53,7 @@
       griPower, genRPM, ambWindDir, 
       bladeAngle)
     values (#{time,jdbcType=TIMESTAMP}, #{plantid,jdbcType=INTEGER}, #{duration,jdbcType=BIGINT}, 
-      #{state,jdbcType=TINYINT}, #{powerstate,jdbcType=TINYINT}, #{estimatepower,jdbcType=REAL}, 
+      #{state,jdbcType=INTEGER}, #{powerstate,jdbcType=INTEGER}, #{estimatepower,jdbcType=REAL}, 
       #{reductivepower,jdbcType=REAL}, #{actualpower,jdbcType=REAL}, #{ambwindspeed,jdbcType=REAL}, 
       #{gripower,jdbcType=REAL}, #{genrpm,jdbcType=REAL}, #{ambwinddir,jdbcType=REAL}, 
       #{bladeangle,jdbcType=REAL})
@@ -98,10 +112,10 @@
         #{duration,jdbcType=BIGINT},
       </if>
       <if test="state != null">
-        #{state,jdbcType=TINYINT},
+        #{state,jdbcType=INTEGER},
       </if>
       <if test="powerstate != null">
-        #{powerstate,jdbcType=TINYINT},
+        #{powerstate,jdbcType=INTEGER},
       </if>
       <if test="estimatepower != null">
         #{estimatepower,jdbcType=REAL},
@@ -129,6 +143,32 @@
       </if>
     </trim>
   </insert>
+  <insert id="batchInsert" parameterType="java.util.List" useGeneratedKeys="false">
+    insert into plant_data_pretreatment (`time`, plantId, duration,
+    `state`, powerState, estimatePower,
+    reductivePower, actualPower, ambWindSpeed,
+    griPower, genRPM, ambWindDir,
+    bladeAngle)
+    values
+
+    <foreach collection="list" item="item" separator=",">
+      (
+        #{item.time,jdbcType=TIMESTAMP},
+        #{item.plantid,jdbcType=INTEGER},
+        #{item.duration,jdbcType=BIGINT},
+        #{item.state,jdbcType=TINYINT},
+        #{item.powerstate,jdbcType=TINYINT},
+        #{item.estimatepower,jdbcType=REAL},
+        #{item.reductivepower,jdbcType=REAL},
+        #{item.actualpower,jdbcType=REAL},
+        #{item.ambwindspeed,jdbcType=REAL},
+        #{item.gripower,jdbcType=REAL},
+        #{item.genrpm,jdbcType=REAL},
+        #{item.ambwinddir,jdbcType=REAL},
+        #{item.bladeangle,jdbcType=REAL}
+      )
+    </foreach>
+  </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.sk.gz.entity.PlantDataPretreatment">
     update plant_data_pretreatment
     <set>
@@ -136,10 +176,10 @@
         duration = #{duration,jdbcType=BIGINT},
       </if>
       <if test="state != null">
-        `state` = #{state,jdbcType=TINYINT},
+        `state` = #{state,jdbcType=INTEGER},
       </if>
       <if test="powerstate != null">
-        powerState = #{powerstate,jdbcType=TINYINT},
+        powerState = #{powerstate,jdbcType=INTEGER},
       </if>
       <if test="estimatepower != null">
         estimatePower = #{estimatepower,jdbcType=REAL},
@@ -172,8 +212,8 @@
   <update id="updateByPrimaryKey" parameterType="com.sk.gz.entity.PlantDataPretreatment">
     update plant_data_pretreatment
     set duration = #{duration,jdbcType=BIGINT},
-      `state` = #{state,jdbcType=TINYINT},
-      powerState = #{powerstate,jdbcType=TINYINT},
+      `state` = #{state,jdbcType=INTEGER},
+      powerState = #{powerstate,jdbcType=INTEGER},
       estimatePower = #{estimatepower,jdbcType=REAL},
       reductivePower = #{reductivepower,jdbcType=REAL},
       actualPower = #{actualpower,jdbcType=REAL},
@@ -185,4 +225,7 @@
     where `time` = #{time,jdbcType=TIMESTAMP}
       and plantId = #{plantid,jdbcType=INTEGER}
   </update>
+    <update id="updateStateByRange">
+
+    </update>
 </mapper>

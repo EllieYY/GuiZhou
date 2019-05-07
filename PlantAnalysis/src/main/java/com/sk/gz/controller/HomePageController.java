@@ -6,7 +6,8 @@ import com.sk.gz.model.result.ResultBean;
 import com.sk.gz.model.result.ResultBeanUtil;
 import com.sk.gz.model.power.MonthStationPower;
 import com.sk.gz.model.power.StationPreview;
-import com.sk.gz.model.param.PlantId;
+import com.sk.gz.model.param.PlantLabel;
+import com.sk.gz.service.ScheduledService;
 import com.sk.gz.service.StationInfoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -37,7 +38,7 @@ public class HomePageController {
 
     @ApiOperation(value = "风机风功率曲线")
     @RequestMapping(value = "/power/curve", method = {RequestMethod.POST})
-    public ResultBean<StationPowerCurve> getPowerCurve(@RequestBody PlantId param) {
+    public ResultBean<StationPowerCurve> getPowerCurve(@RequestBody PlantLabel param) {
         int id = param.getId();
         return ResultBeanUtil.makeOkResp(stationInfoService.getPowerCurveById(id));
     }

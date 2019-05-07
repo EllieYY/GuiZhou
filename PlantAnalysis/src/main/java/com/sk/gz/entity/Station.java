@@ -1,11 +1,14 @@
 package com.sk.gz.entity;
 
+import lombok.AllArgsConstructor;
+
 import java.io.Serializable;
 
 /**
  * station
  * @author 
  */
+@AllArgsConstructor
 public class Station implements Serializable {
     /**
      * 风电厂id

@@ -4,6 +4,7 @@ import com.sk.gz.model.curve.CrossAnalysisResult;
 import com.sk.gz.model.curve.PlantPowerCurve;
 import com.sk.gz.model.curve.StationPowerCurve;
 import com.sk.gz.model.param.CrossAnalysisParam;
+import com.sk.gz.model.param.PlantLabel;
 import com.sk.gz.model.param.PowerCurveParam;
 import com.sk.gz.model.power.MonthStationPower;
 import com.sk.gz.model.power.StationIndicators;
@@ -28,4 +29,6 @@ public interface StationInfoService {
     CrossAnalysisResult doCrossAnaysis(CrossAnalysisParam param);
 
     List<PlantPowerCurve> powerCurveAnalysis(List<PowerCurveParam> params);
+
+    List<PlantLabel> getPlantList();
 }

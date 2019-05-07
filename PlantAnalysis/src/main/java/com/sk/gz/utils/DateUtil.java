@@ -124,7 +124,7 @@ public class DateUtil {
      * @return
      */
     public static Date getFirstDateOfMonth(Date date) {
-        CALENDAR.setTime(date);
+        CALENDAR.setTime(dateTimeToDate(date));
         CALENDAR.set(Calendar.DAY_OF_MONTH, CALENDAR.getActualMinimum(Calendar.DAY_OF_MONTH));
         return CALENDAR.getTime();
     }

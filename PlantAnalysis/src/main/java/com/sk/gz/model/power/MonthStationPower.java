@@ -26,4 +26,11 @@ public class MonthStationPower {
     @ApiModelProperty(value = "折减电量")
     @JsonProperty("reduction")
     private float reduction;
+
+
+    public MonthStationPower(Date month, float power, float reduction) {
+        this.month = month;
+        this.power = power;
+        this.reduction = reduction;
+    }
 }

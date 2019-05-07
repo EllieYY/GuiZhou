@@ -1,11 +1,16 @@
 package com.sk.gz.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 
 /**
  * plant_data_pretreatment
  * @author 
  */
+@AllArgsConstructor
+@NoArgsConstructor
 public class PlantDataPretreatment extends PlantDataPretreatmentKey implements Serializable {
     /**
      * 时间区间秒数
@@ -15,12 +20,12 @@ public class PlantDataPretreatment extends PlantDataPretreatmentKey implements S
     /**
      * 数据状态。0-正常 1-无效 2-停机 3-限电 4-欠发 5-超发
      */
-    private Byte state;
+    private Integer state;
 
     /**
      * 发电状态 0-发电 1-待机 2-故障 3-检修 4-停机 5-离线
      */
-    private Byte powerstate;
+    private Integer powerstate;
 
     /**
      * 应发电量
@@ -72,19 +77,19 @@ public class PlantDataPretreatment extends PlantDataPretreatmentKey implements S
         this.duration = duration;
     }
 
-    public Byte getState() {
+    public Integer getState() {
         return state;
     }
 
-    public void setState(Byte state) {
+    public void setState(Integer state) {
         this.state = state;
     }
 
-    public Byte getPowerstate() {
+    public Integer getPowerstate() {
         return powerstate;
     }
 
-    public void setPowerstate(Byte powerstate) {
+    public void setPowerstate(Integer powerstate) {
         this.powerstate = powerstate;
     }
 
@@ -205,6 +210,8 @@ public class PlantDataPretreatment extends PlantDataPretreatmentKey implements S
         sb.append(getClass().getSimpleName());
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
+        sb.append(", time=").append(super.getTime());
+        sb.append(", plantid=").append(super.getPlantid());
         sb.append(", duration=").append(duration);
         sb.append(", state=").append(state);
         sb.append(", powerstate=").append(powerstate);

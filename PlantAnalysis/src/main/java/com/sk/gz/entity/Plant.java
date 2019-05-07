@@ -136,4 +136,13 @@ public class Plant implements Serializable {
         sb.append("]");
         return sb.toString();
     }
+
+    public Plant(Integer id, String name, Integer stationid, Float powerrating, Float cutinwindspeed, Float cutoffwindspeed) {
+        this.id = id;
+        this.name = name;
+        this.stationid = stationid;
+        this.powerrating = powerrating;
+        this.cutinwindspeed = cutinwindspeed;
+        this.cutoffwindspeed = cutoffwindspeed;
+    }
 }

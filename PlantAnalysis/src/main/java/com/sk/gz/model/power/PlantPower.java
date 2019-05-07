@@ -3,6 +3,7 @@ package com.sk.gz.model.power;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
@@ -12,6 +13,7 @@ import lombok.Data;
  */
 @ApiModel(description = "风机发电量信息总览")
 @Data
+@AllArgsConstructor
 public class PlantPower {
     @ApiModelProperty(value = "风机名称")
     @JsonProperty("name")

@@ -1,5 +1,6 @@
 package com.sk.gz.model.param;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,14 +14,18 @@ import lombok.Data;
 @Data
 public class CrossAnalysisParam {
     @ApiModelProperty(value = "风机id")
+    @JsonProperty("id")
     private int id;
 
     @ApiModelProperty(value = "散点图指标")
+    @JsonProperty("x")
     private int x;
 
     @ApiModelProperty(value = "散点图指标")
+    @JsonProperty("y")
     private int y;
 
     @ApiModelProperty(value = "直方图指标")
-    private int density;
+    @JsonProperty("densityNum")
+    private int densityScale;
 }

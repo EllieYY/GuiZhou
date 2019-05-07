@@ -2,6 +2,7 @@ package com.sk.gz.model.power;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
@@ -10,6 +11,7 @@ import lombok.Data;
  * @Date : 2019/4/22
  */
 @Data
+@AllArgsConstructor
 public class Availability {
     @ApiModelProperty(value = "风机名称")
     @JsonProperty("name")

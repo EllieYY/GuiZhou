@@ -18,6 +18,12 @@
     from plant
     where id = #{id,jdbcType=INTEGER}
   </select>
+  <select id="findAllIndexInfo" resultType="com.sk.gz.model.param.PlantLabel">
+    SELECT
+      id as "id",
+      name as "name"
+    FROM plant
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from plant
     where id = #{id,jdbcType=INTEGER}

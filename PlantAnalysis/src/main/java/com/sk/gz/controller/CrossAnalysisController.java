@@ -3,6 +3,7 @@ package com.sk.gz.controller;
 import com.sk.gz.model.curve.CrossAnalysisResult;
 import com.sk.gz.model.curve.PlantPowerCurve;
 import com.sk.gz.model.param.CrossAnalysisParam;
+import com.sk.gz.model.param.PlantLabel;
 import com.sk.gz.model.param.PowerCurveParam;
 import com.sk.gz.model.result.ResultBean;
 import com.sk.gz.model.result.ResultBeanUtil;
@@ -40,4 +41,9 @@ public class CrossAnalysisController {
         return ResultBeanUtil.makeOkResp(stationInfoService.powerCurveAnalysis(param));
     }
 
+    @ApiOperation(value = "风机信息")
+    @RequestMapping(value = "/plantsList", method = {RequestMethod.POST, RequestMethod.GET})
+    public ResultBean<List<PlantLabel>> getPlantInfo() {
+        return ResultBeanUtil.makeOkResp(stationInfoService.getPlantList());
+    }
 }

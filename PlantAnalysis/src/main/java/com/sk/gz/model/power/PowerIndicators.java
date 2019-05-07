@@ -49,4 +49,15 @@ public class PowerIndicators {
     @JsonProperty("pba")
     private float pba;
 
+    public PowerIndicators(String name, float actualPower, float academicPower, float totalReduction, float downtimeReduction, float limitReduction, float unknownReduction, float tba, float pba) {
+        this.name = name;
+        this.actualPower = actualPower;
+        this.academicPower = academicPower;
+        this.totalReduction = totalReduction;
+        this.downtimeReduction = downtimeReduction;
+        this.limitReduction = limitReduction;
+        this.unknownReduction = unknownReduction;
+        this.tba = tba;
+        this.pba = pba;
+    }
 }
