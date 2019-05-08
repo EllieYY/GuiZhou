@@ -6,12 +6,10 @@
     <result column="plantId" jdbcType="INTEGER" property="plantid" />
     <result column="windSpeed" jdbcType="REAL" property="windspeed" />
     <result column="power" jdbcType="REAL" property="power" />
-    <result column="pointCount" jdbcType="INTEGER" property="pointcount" />
     <result column="type" jdbcType="BIT" property="type" />
-    <result column="date" jdbcType="TIMESTAMP" property="date" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, plantId, windSpeed, `power`, pointCount, `type`, `date`
+    id, plantId, windSpeed, `power`, `type`
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -23,13 +21,15 @@
     delete from power_curve_points
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.sk.gz.entity.PowerCurvePoints">
+    <delete id="deleteByType">
+        delete from power_curve_points
+        where type = #{type,jdbcType=BIT}
+    </delete>
+    <insert id="insert" parameterType="com.sk.gz.entity.PowerCurvePoints">
     insert into power_curve_points (id, plantId, windSpeed, 
-      `power`, pointCount, `type`, `date`
-      )
+      `power`, `type`)
     values (#{id,jdbcType=INTEGER}, #{plantid,jdbcType=INTEGER}, #{windspeed,jdbcType=REAL}, 
-      #{power,jdbcType=REAL}, #{pointcount,jdbcType=INTEGER}, #{type,jdbcType=BIT}, #{date,jdbcType=TIMESTAMP}
-      )
+      #{power,jdbcType=REAL}, #{type,jdbcType=BIT})
   </insert>
   <insert id="insertSelective" parameterType="com.sk.gz.entity.PowerCurvePoints">
     insert into power_curve_points
@@ -46,14 +46,8 @@
       <if test="power != null">
         `power`,
       </if>
-      <if test="pointcount != null">
-        pointCount,
-      </if>
       <if test="type != null">
         `type`,
-      </if>
-      <if test="date != null">
-        `date`,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -69,18 +63,29 @@
       <if test="power != null">
         #{power,jdbcType=REAL},
       </if>
-      <if test="pointcount != null">
-        #{pointcount,jdbcType=INTEGER},
-      </if>
       <if test="type != null">
         #{type,jdbcType=BIT},
       </if>
-      <if test="date != null">
-        #{date,jdbcType=TIMESTAMP},
-      </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.sk.gz.entity.PowerCurvePoints">
+    <insert id="batchInsert">
+        <selectKey resultType="INTEGER" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() AS id
+        </selectKey>
+        insert into power_curve_points (plantId, windSpeed,
+        `power`, `type`)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{plantId,jdbcType=INTEGER},
+            #{item.windSpeed,jdbcType=REAL},
+            #{item.power,jdbcType=REAL},
+            #{type,jdbcType=BIT}
+            )
+        </foreach>
+
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.sk.gz.entity.PowerCurvePoints">
     update power_curve_points
     <set>
       <if test="plantid != null">
@@ -92,14 +97,8 @@
       <if test="power != null">
         `power` = #{power,jdbcType=REAL},
       </if>
-      <if test="pointcount != null">
-        pointCount = #{pointcount,jdbcType=INTEGER},
-      </if>
       <if test="type != null">
         `type` = #{type,jdbcType=BIT},
-      </if>
-      <if test="date != null">
-        `date` = #{date,jdbcType=TIMESTAMP},
       </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
@@ -109,9 +108,7 @@
     set plantId = #{plantid,jdbcType=INTEGER},
       windSpeed = #{windspeed,jdbcType=REAL},
       `power` = #{power,jdbcType=REAL},
-      pointCount = #{pointcount,jdbcType=INTEGER},
-      `type` = #{type,jdbcType=BIT},
-      `date` = #{date,jdbcType=TIMESTAMP}
+      `type` = #{type,jdbcType=BIT}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

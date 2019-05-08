@@ -1,11 +1,20 @@
 package com.sk.gz.model.converter;
 
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.metadata.Sheet;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import com.sk.gz.dao.PlantDataPretreatmentDAO;
 import lombok.Data;
-import org.apache.commons.collections4.map.PassiveExpiringMap;
+import lombok.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,70 +25,84 @@ import java.util.List;
 @Data
 @Component
 public class QuartileFilter {
+    private final Logger log = LoggerFactory.getLogger(QuartileFilter.class);
+
     @Resource
     private PlantDataPretreatmentDAO plantDataPretreatmentDAO;
-
     private float FL,FU;
 
-    public void filt(int plantId, String column, float scale) {
-        float maxValue = plantDataPretreatmentDAO.findMaxByColumn(column, plantId);
-        System.out.println("column " + column + " max value is " + maxValue);
-        float rangeMin = 0;
-        float rangeMax = maxValue;
-        while (rangeMin < maxValue) {
-            float tempMax = rangeMin + scale;
-            rangeMax = tempMax > maxValue ? maxValue : tempMax;
+    public void filt(int plantId, List<FilterParam> params) {
+        List<FilterResult> filterResults = new ArrayList<>();
+        for (int i = 0; i < params.size(); i++) {
+            FilterParam param = params.get(i);
+            String scaleColumn = param.getScaleColumn();
+            String targetColumn = param.getTargetColumn();
+            float scale = param.getScale();
+            int rangeValidFlag = param.getRangeValidFlag();
 
-            //#1 get data
-            List<Float> data = plantDataPretreatmentDAO.findByColumnAndRange(new RangeParam(
-                    column,
-                    plantId,
-                    DataState.NORMAL.getValue(),
-                    rangeMin,
-                    DataState.UNDER.getValue(),
-                    rangeMax,
-                    DataState.OVER.getValue()));
+            float maxValue = plantDataPretreatmentDAO.findMaxByColumn(scaleColumn, plantId);
+            float rangeMin = 0;
+            float rangeMax = maxValue;
+            while (rangeMin < maxValue) {
+                float tempMax = rangeMin + scale;
+                rangeMax = tempMax > maxValue ? maxValue : tempMax;
 
-            System.out.println(data);
+                //#1 get data
+                RangeParam rangeParam = new RangeParam(scaleColumn, targetColumn, plantId,
+                        DataState.NORMAL.getValue(),
+                        rangeMin, DataState.UNDER.getValue(),
+                        rangeMax, DataState.OVER.getValue(),
+                        rangeMin, rangeMax);
+                List<Float> data = plantDataPretreatmentDAO.findByColumnAndRange(rangeParam);
+                log.info("[rang param] = " + rangeParam);
 
-            //#2 calculate filt factor
-            FL = rangeMin;
-            FU = rangeMax;
-            if (getQuartile(data) != 0) {
-                continue;
+                //#2 calculate filt factor
+                FL = rangeMin;
+                FU = rangeMax;
+                FilterResult filterResult = getQuartile(data, rangeValidFlag);
+                if (filterResult == null) {
+                    rangeMin += scale;
+                    continue;
+                }
+
+                filterResults.add(filterResult);
+                if (FL == rangeMin && FU == rangeMax) {
+                    rangeMin += scale;
+                    continue;
+                }
+
+                //#3 update data state
+                RangeParam updateRangeParam = new RangeParam(
+                        scaleColumn, targetColumn, plantId,
+                        DataState.NORMAL.getValue(),
+                        FL, DataState.UNDER.getValue(),
+                        FU, DataState.OVER.getValue(),
+                        rangeMin, rangeMax);
+                plantDataPretreatmentDAO.updateStateByRange(updateRangeParam);
+
+                rangeMin += scale;
             }
-            if (FL == rangeMin && FU == rangeMax) {
-                continue;
-            }
 
-            //#3 update data state
-            System.out.println("FL=" + FL + "FU=" + FU);
-            new RangeParam(
-                    column,
-                    plantId,
-                    DataState.NORMAL.getValue(),
-                    FL,
-                    DataState.UNDER.getValue(),
-                    FU,
-                    DataState.OVER.getValue());
-
-
-
-
-
-            rangeMin += scale;
-
-            break;
+            filterResults.add(new FilterResult());
         }
 
-
+        //# print result to excel
+        try {
+            toExcel(plantId, filterResults);
+        } catch (IOException e) {
+            log.info("fail to save to excel");
+        }
     }
 
-    private int getQuartile(List<Float> data) {
+
+    private FilterResult getQuartile(List<Float> data, int rangeValidFlag) {
         int size = data.size();
         if (size < 4) {
-            return 1;
+            log.info("negligible data size: " + size);
+            return null;
         }
+
+        String range = FL + "~" + FU;
 
         int k = size / 4;
         int i = size % 4;
@@ -105,6 +128,33 @@ public class QuartileFilter {
         FL = Q1 - 1.5f * IQR;
         FU = Q3 + 1.5f * IQR;
 
-        return 0;
+
+        float valueMin = data.get(0);
+        float valueMax = data.get(size-1);
+        if (rangeValidFlag == 1) {
+            FL = valueMin;
+        } else if (rangeValidFlag == -1) {
+            FU = valueMax;
+        } else if (rangeValidFlag == 2) {
+            return null;
+        }
+
+        return new FilterResult(range, valueMin, valueMax, Q1, Q3, IQR, FL, FU);
+    }
+
+
+    private void toExcel(int plantId, List<FilterResult> result) throws IOException {
+        int sheetNo = plantId % 100 + 1;
+
+        try (OutputStream out = new FileOutputStream("result" + plantId + ".xlsx");) {
+            ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX);
+
+            Sheet sheet = new Sheet(sheetNo, 0, FilterResult.class);
+            String name = "FJ" + plantId;
+            sheet.setSheetName(name);
+
+            writer.write(result, sheet);
+            writer.finish();
+        }
     }
 }

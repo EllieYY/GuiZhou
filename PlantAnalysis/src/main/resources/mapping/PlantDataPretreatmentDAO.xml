@@ -32,14 +32,24 @@
     FROM plant_data_pretreatment
       WHERE plantId = #{plantId,jdbcType=INTEGER}
   </select>
-    <select id="findByColumnAndRange" parameterType="com.sk.gz.model.converter.RangeParam" resultType="java.lang.Float">
-      SELECT ${column}
+  <select id="findByColumnAndRange" parameterType="com.sk.gz.model.converter.RangeParam" resultType="java.lang.Float">
+      SELECT ${targetColumn}
         FROM plant_data_pretreatment
         WHERE plantId = #{plantId,jdbcType=INTEGER}
           and `state` = #{validState}
-          and ${column} &gt;= #{rangeMin}
-          and ${column} &lt; #{rangeMax}
-        Order by ${column} ASC
+          and ${filterColumn} &gt;= #{valueMin}
+          and ${filterColumn} &lt; #{valueMax}
+        Order by ${targetColumn} ASC
+  </select>
+    <select id="findAvgByColumnAndRange" parameterType="com.sk.gz.model.converter.RangeParam" resultType="com.sk.gz.model.curve.CurvePoint">
+        SELECT
+            avg(${targetColumn}) as "power",
+            avg(${filterColumn}) as "windSpeed"
+        FROM plant_data_pretreatment
+        WHERE plantId = #{plantId,jdbcType=INTEGER}
+              and `state` = #{validState}
+              and ${filterColumn} &gt;= #{valueMin}
+              and ${filterColumn} &lt; #{valueMax}
     </select>
     <delete id="deleteByPrimaryKey" parameterType="com.sk.gz.entity.PlantDataPretreatmentKey">
     delete from plant_data_pretreatment
@@ -225,7 +235,15 @@
     where `time` = #{time,jdbcType=TIMESTAMP}
       and plantId = #{plantid,jdbcType=INTEGER}
   </update>
-    <update id="updateStateByRange">
+  <update id="updateStateByRange" parameterType="com.sk.gz.model.converter.RangeParam">
+    update plant_data_pretreatment
+    set `state` = (case when ${targetColumn} &lt; #{rangeMin} then #{minState}
+                   when ${targetColumn} &gt; #{rangeMax} then #{maxState}
+                   else #{validState} end)
+    where plantId = #{plantId}
+      and `state` = #{validState}
+      and ${filterColumn} &gt;= #{valueMin}
+      and ${filterColumn} &lt; #{valueMax}
+  </update>
 
-    </update>
 </mapper>

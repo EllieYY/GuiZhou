@@ -2,9 +2,15 @@ package com.sk.gz.service.impl;
 
 import com.sk.gz.aop.ResultBeanExceptionHandler;
 import com.sk.gz.dao.PlantDataPretreatmentDAO;
+import com.sk.gz.dao.PowerCurvePointsDAO;
 import com.sk.gz.entity.PlantDataInitial;
+import com.sk.gz.entity.PowerCurvePoints;
+import com.sk.gz.model.converter.DataState;
+import com.sk.gz.model.converter.FilterParam;
 import com.sk.gz.model.converter.QuartileFilter;
+import com.sk.gz.model.converter.RangeParam;
 import com.sk.gz.model.converter.SourceDataCache;
+import com.sk.gz.model.curve.CurvePoint;
 import com.sk.gz.service.ScheduledService;
 import com.sk.gz.utils.CsvUtil;
 import org.slf4j.Logger;
@@ -15,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.annotation.Resources;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,29 +44,37 @@ public class ScheduledServiceImpl implements ScheduledService {
     @Resource
     private QuartileFilter quartileFilter;
 
+    @Resource
+    private PlantDataPretreatmentDAO plantDataPretreatmentDAO;
+
+    @Resource
+    private PowerCurvePointsDAO powerCurvePointsDAO;
+
 //    @Scheduled(cron = "0 59 * * * ? ")
     @Override
-    public void dataTransform(String filePath) {
-        if (filePath.isEmpty() || filePath == null) {
-            filePath = "testfiles/hbq-10.csv";
-        }
-
-//        //#1 read csv
-//        log.info("[cron time]" + System.currentTimeMillis());
-//        List<PlantDataInitial> sourceData = CsvUtil.getCsvData(filePath, PlantDataInitial.class);
-//        log.info("plant#" + filePath + ", data size = " + sourceData.size() + ", " + System.currentTimeMillis());
+    public void dataTransform(List<String> filePathList) {
+        int plantId = 30210;
+//        String filePath = "";
+//        if (filePathList.size() == 0 || filePathList == null) {
+//            filePath = "testfiles/hbq-10.csv";
+//        }
+//        for (String filePath : filePathList) {
+//            //#1 read csv
+//            List<PlantDataInitial> sourceData = CsvUtil.getCsvData(filePath, PlantDataInitial.class);
+//            log.info("plant#" + filePath + ", data size = " + sourceData.size());
 //
-//        //#2 data verify: to 10mins data
-//        pretreatment(sourceData);
+//            //#2 data verify: to 10mins data
+//            pretreatment(sourceData);
+//        }
 
         //#3 filter
-        filter(30210);
-
-
+//        filter(plantId);
 
         //#4 calculate and save.
+//        List<CurvePoint> curve = getPowerCurve(plantId,"ambWindSpeed","griPower", 0.5f);
+//        log.info(curve.toString());
 
-
+        calculatePower(plantId);
     }
 
     /** 预处理 */
@@ -76,8 +91,48 @@ public class ScheduledServiceImpl implements ScheduledService {
         }
     }
 
+    /** 四分位法过滤 */
     private void filter(int plantId) {
-//        quartileFilter.filt(plantId,"griPower", 25f);
-        quartileFilter.filt(plantId,"ambWindSpeed", 0.5f);
+        List<FilterParam> params = new ArrayList<>();
+        params.add(new FilterParam("griPower", 25f, "ambWindSpeed", 0));
+        params.add(new FilterParam("ambWindSpeed", 0.5f, "griPower", 1));
+        quartileFilter.filt(plantId, params);
+    }
+
+    /** 计算生成功率曲线 */
+    private List<CurvePoint> getPowerCurve(int plantId, String xColumn, String yColumn, float scale) {
+        List<CurvePoint> curvePoints = new ArrayList<>();
+
+        powerCurvePointsDAO.deleteByType(0);
+
+        float maxValue = plantDataPretreatmentDAO.findMaxByColumn(xColumn, plantId);
+        float rangeMin = 0;
+        float rangeMax = maxValue;
+        while (rangeMin < maxValue) {
+            float tempMax = rangeMin + scale;
+            rangeMax = tempMax > maxValue ? maxValue : tempMax;
+            RangeParam rangeParam = new RangeParam(xColumn, yColumn, plantId,
+                    DataState.NORMAL.getValue(),
+                    rangeMin, DataState.UNDER.getValue(),
+                    rangeMax, DataState.OVER.getValue(),
+                    rangeMin, rangeMax);
+            CurvePoint point = plantDataPretreatmentDAO.findAvgByColumnAndRange(rangeParam);
+            if (point != null) {
+                curvePoints.add(point);
+            }
+
+            rangeMin += scale;
+        }
+
+        //# save to database
+        powerCurvePointsDAO.batchInsert(plantId, curvePoints, 0);
+
+        return curvePoints;
+    }
+
+    /** 对预处理的数据进行电量计算 */
+    private int calculatePower(int plantId) {
+
+        return 0;
     }
 }

@@ -11,13 +11,17 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class RangeParam {
-    /** 操作的列名 */
-    private String column;
-    /** 状态过滤值 */
-    private int validState;
+    /** 用来选区数据的列 */
+    private String filterColumn;
+
+    /** 目标数据列 */
+    private String targetColumn;
 
     /** 风机标识 */
     private int plantId;
+
+    /** 状态过滤值 */
+    private int validState;
 
     /** 值下限 */
     private float rangeMin;
@@ -30,5 +34,9 @@ public class RangeParam {
 
     /** 高于上限标记状态 */
     private int maxState;
+
+    /** 原始值的范围 */
+    private float valueMin;
+    private float valueMax;
 
 }

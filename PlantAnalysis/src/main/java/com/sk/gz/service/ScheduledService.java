@@ -1,5 +1,7 @@
 package com.sk.gz.service;
 
+import java.util.List;
+
 public interface ScheduledService {
-    void dataTransform(String filePath);
+    void dataTransform(List<String> filePathList);
 }

@@ -3,6 +3,7 @@ package com.sk.gz.dao;
 import com.sk.gz.entity.PlantDataPretreatment;
 import com.sk.gz.entity.PlantDataPretreatmentKey;
 import com.sk.gz.model.converter.RangeParam;
+import com.sk.gz.model.curve.CurvePoint;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +21,6 @@ public interface PlantDataPretreatmentDAO extends MyBatisBaseDao<PlantDataPretre
     List<Float> findByColumnAndRange(RangeParam param);
 
     void updateStateByRange(RangeParam param);
+
+    CurvePoint findAvgByColumnAndRange(RangeParam param);
 }
