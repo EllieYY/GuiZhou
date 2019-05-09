@@ -2,6 +2,7 @@ package com.sk.gz.model.converter;
 
 import com.sk.gz.entity.PlantDataInitial;
 import com.sk.gz.entity.PlantDataPretreatment;
+import com.sk.gz.model.curve.CurvePoint;
 import com.sk.gz.utils.DateUtil;
 import lombok.Data;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import java.util.List;
 @Data
 @Component
 public class SourceDataCache {
+    private static final float MS_TO_HOUR = 0.001f / 3600f;
     private List<PlantDataInitial> cache = new ArrayList<PlantDataInitial>();
     private PlantDataPretreatment preData = null;
     private Date cacheStartTime = null;
@@ -27,7 +29,7 @@ public class SourceDataCache {
     private boolean stateChanged = false;
     private int plantId;
 
-    public int addData(PlantDataInitial data, long limit, boolean dataEnd) {
+    public int addData(PlantDataInitial data, long limit, List<CurvePoint> curvePoints, boolean dataEnd) {
         //# init catch info
         if (cacheStartTime == null || cacheState == null || plantId != data.getPlantid()) {
             initData(data);
@@ -39,7 +41,7 @@ public class SourceDataCache {
         Date monthBegin = DateUtil.getFirstDateOfMonth(datatime);
         if ((datatime.getTime() - cacheStartTime.getTime()) >= limit ||
                 monthBegin.getTime() != cacheMonthBegin.getTime()) {
-            preData = preprocess();
+            preData = preprocess(curvePoints);
             initCache(data);
             return 0;
         }
@@ -61,7 +63,7 @@ public class SourceDataCache {
         }
 
         if (dataEnd) {
-            preData = preprocess();
+            preData = preprocess(curvePoints);
             return 0;
         }
         return 1;
@@ -92,7 +94,7 @@ public class SourceDataCache {
         cache.add(data);
     }
 
-    private PlantDataPretreatment preprocess() {
+    private PlantDataPretreatment preprocess(List<CurvePoint> curvePoints) {
         if (cache.size() < 2 || cacheStartTime == null || cacheState == null) {
             return null;
         }
@@ -105,7 +107,8 @@ public class SourceDataCache {
         preData.setTime(cacheStartTime);
 
         //# 区间时间 - ms
-        preData.setDuration(cacheEndTime.getTime() - cacheStartTime.getTime());
+        long duration = cacheEndTime.getTime() - cacheStartTime.getTime();
+        preData.setDuration(duration);
 
         //# 发电状态
         preData.setPowerstate(cacheState);
@@ -127,7 +130,8 @@ public class SourceDataCache {
         preData.setTotalpower(totalPower);
 
         //# 风速风向
-        preData.setAmbwindspeed((float)(cache.stream().mapToDouble(PlantDataInitial::getAmbwindspeed).average().getAsDouble()));
+        float wind = (float)(cache.stream().mapToDouble(PlantDataInitial::getAmbwindspeed).average().getAsDouble());
+        preData.setAmbwindspeed(wind);
         preData.setAmbwinddir((float)(cache.stream().mapToDouble(PlantDataInitial::getAmbwinddir).average().getAsDouble()));
 
         //# 有功功率
@@ -141,11 +145,46 @@ public class SourceDataCache {
         //# 平均桨叶角度
         preData.setBladeangle((float)(cache.stream().mapToDouble(PlantDataInitial::getHubspe).average().getAsDouble()));
 
+        //# 计算理论发电量
+        float estimatepower = calculateEstimatepower(wind, curvePoints, duration);
+        preData.setEstimatepower(estimatepower);
 
+        //# 默认值
         preData.setActualpower(0.0f);
-        preData.setEstimatepower(0.0f);
         preData.setReductivepower(0.0f);
 
         return preData;
+    }
+
+    // 根据功率曲线
+    private float calculateEstimatepower(float wind, List<CurvePoint> curvePoints, long msesc) {
+        float power = 0;
+        if (curvePoints.size() < 2) {
+            return power;
+        }
+
+        CurvePoint prePoint = null;
+        CurvePoint nowPoint = null;
+        for (CurvePoint point: curvePoints) {
+            if (prePoint == null || nowPoint == null) {
+                prePoint = point;
+                nowPoint = point;
+                continue;
+            }
+
+            prePoint = nowPoint;
+            nowPoint = point;
+            if (nowPoint.getWindSpeed() > wind) {
+                break;
+            }
+        }
+
+        float speedLen = nowPoint.getWindSpeed() - prePoint.getWindSpeed();
+        if (speedLen != 0) {
+            float powerLen = nowPoint.getPower() - prePoint.getPower();
+            power = prePoint.getPower() + powerLen * (wind - prePoint.getWindSpeed() / speedLen);
+        }
+
+        return power * msesc * MS_TO_HOUR;
     }
 }

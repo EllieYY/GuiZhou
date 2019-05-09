@@ -1,0 +1,26 @@
+package com.sk.gz.model.param;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
+import java.util.Date;
+
+/**
+ * @Description :
+ * @Author : Ellie
+ * @Date : 2019/5/9
+ */
+@Data
+public class HisDataPrepareParam {
+    @JsonProperty("sTime")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date startTime;
+
+    @JsonProperty("eTime")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date endTime;
+
+    @JsonProperty("hisFlag")
+    private boolean his;
+}

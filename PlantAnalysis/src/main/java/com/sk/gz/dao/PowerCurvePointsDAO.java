@@ -16,5 +16,6 @@ public interface PowerCurvePointsDAO extends MyBatisBaseDao<PowerCurvePoints, In
 
     int deleteByType(@Param("type") int type);
 
-    
+    List<CurvePoint> findByPlantIdAndTypeAndWindASC(@Param("plantId") int plantId, @Param("type") int type);
+
 }

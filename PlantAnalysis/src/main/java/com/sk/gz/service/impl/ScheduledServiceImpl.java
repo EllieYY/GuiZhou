@@ -1,27 +1,33 @@
 package com.sk.gz.service.impl;
 
 import com.sk.gz.aop.ResultBeanExceptionHandler;
+import com.sk.gz.dao.PlantDAO;
 import com.sk.gz.dao.PlantDataPretreatmentDAO;
 import com.sk.gz.dao.PowerCurvePointsDAO;
 import com.sk.gz.entity.PlantDataInitial;
 import com.sk.gz.entity.PowerCurvePoints;
+import com.sk.gz.model.converter.CurvePointType;
 import com.sk.gz.model.converter.DataState;
 import com.sk.gz.model.converter.FilterParam;
 import com.sk.gz.model.converter.QuartileFilter;
 import com.sk.gz.model.converter.RangeParam;
 import com.sk.gz.model.converter.SourceDataCache;
 import com.sk.gz.model.curve.CurvePoint;
+import com.sk.gz.model.param.PlantLabel;
 import com.sk.gz.service.ScheduledService;
 import com.sk.gz.utils.CsvUtil;
+import com.sk.gz.utils.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.annotation.Resources;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,68 +43,93 @@ public class ScheduledServiceImpl implements ScheduledService {
 
     @Resource
     private PretreatmentDataCache pretreatmentDataCache;
-
     @Resource
     private SourceDataCache sourceDataCache;
-
     @Resource
     private QuartileFilter quartileFilter;
-
     @Resource
     private PlantDataPretreatmentDAO plantDataPretreatmentDAO;
-
     @Resource
     private PowerCurvePointsDAO powerCurvePointsDAO;
+    @Resource
+    private PlantDAO plantDAO;
 
-//    @Scheduled(cron = "0 59 * * * ? ")
+
+    /** 定时任务，每天执行一次 */
+    @Scheduled(cron = "0 0 0 * * ?")
     @Override
-    public void dataTransform(List<String> filePathList) {
-        int plantId = 30210;
-//        String filePath = "";
-//        if (filePathList.size() == 0 || filePathList == null) {
-//            filePath = "testfiles/hbq-10.csv";
-//        }
-        for (String filePath : filePathList) {
-            //#1 read csv
-            List<PlantDataInitial> sourceData = CsvUtil.getCsvData(filePath, PlantDataInitial.class);
-            log.info("plant#" + filePath + ", data size = " + sourceData.size());
+    public void scheduleTask() {
+        Date today = new Date();
+        Date startTime = DateUtil.dateTimeToDate(today);
+        Date endTime = DateUtil.dateAddDays(startTime, 1, false);
+        dataTransform(startTime, endTime, false);
+    }
 
-            //#2 data verify: to 10mins data
-            pretreatment(sourceData);
+    @Override
+    public void dataTransform(Date startTime, Date endTime, boolean isHis) {
+        List<PlantLabel> plants = plantDAO.findAllIndexInfo();
+
+        // 文件存放规则适配
+        String pathPrefix = "testfiles/";
+        String fileDatePattern = isHis ? "yyyy_mm/" : "yyyy_mm_dd/";
+        Date cur = startTime;
+        Date pre = cur;
+        while (cur.before(endTime)) {
+            String filePath = pathPrefix + DateUtil.dateFormat(cur, fileDatePattern);
+
+            for (PlantLabel plant : plants) {
+                int plantId = plant.getId();
+
+                //TODO:test
+                plantId = 30210;
+                String fileName = "hbq-" + plantId + ".csv";
+
+                //#1 read csv
+                List<PlantDataInitial> sourceData = CsvUtil.getCsvData(filePath + fileName, PlantDataInitial.class);
+                log.info("plant#" + filePath + fileName + ", data size = " + sourceData.size());
+
+                //#2 data verify: to 10mins data
+                pretreatment(plantId, sourceData);
+
+                //#3 filter
+                filter(plantId);
+
+                //#4 update power curve.
+//            List<CurvePoint> curve = getPowerCurve(plantId,"ambWindSpeed","griPower", 0.5f);
+//            log.info(curve.toString());
+
+                // TODO:delete
+                break;
+            }
+
+            pre = cur;
+            if (isHis) {
+                cur = DateUtil.dateAddMonths(cur, 1);
+            } else {
+                cur = DateUtil.dateAddDays(cur, 1, false);
+            }
+
+            //# calculate power for all plant
+            plantDataPretreatmentDAO.updatePower(DataState.INVALID.getValue(),
+                    DateUtil.dateAddDays(pre, 1, false), cur);
         }
-
-        //#3 filter
-        filter(plantId);
-
-        //#4 calculate and save.
-//        List<CurvePoint> curve = getPowerCurve(plantId,"ambWindSpeed","griPower", 0.5f);
-//        log.info(curve.toString());
-
-        calculatePower(plantId);
     }
 
     /** 预处理 */
-    private void pretreatment(List<PlantDataInitial> sourceData) {
+    private void pretreatment(int plantId, List<PlantDataInitial> sourceData) {
         // 【重要前提】：功率曲线已经存在
-//        List<CurvePoint> curvePoints
-
+        List<CurvePoint> curvePoints = powerCurvePointsDAO.findByPlantIdAndTypeAndWindASC(
+                plantId,
+                CurvePointType.FFIT_CURVE.getValue());
 
         sourceDataCache.initCache();
         int size = sourceData.size();
         for (int i = 0; i < size; i++) {
             boolean isDataEnd = ((i+1) == size);
 
-            if(i > 50*120) {
-                isDataEnd = true;
-            }
             PlantDataInitial data = sourceData.get(i);
-
-            if (sourceDataCache.addData(data, PREPROCESS_DATA_LENGTH, isDataEnd) == 0) {
+            if (sourceDataCache.addData(data, PREPROCESS_DATA_LENGTH, curvePoints, isDataEnd) == 0) {
                 pretreatmentDataCache.add(sourceDataCache.getPreData(), isDataEnd);
-            }
-
-            if (isDataEnd) {
-                break;
             }
         }
     }
@@ -115,7 +146,7 @@ public class ScheduledServiceImpl implements ScheduledService {
     private List<CurvePoint> getPowerCurve(int plantId, String xColumn, String yColumn, float scale) {
         List<CurvePoint> curvePoints = new ArrayList<>();
 
-        powerCurvePointsDAO.deleteByType(0);
+        powerCurvePointsDAO.deleteByType(CurvePointType.FFIT_CURVE.getValue());
 
         float maxValue = plantDataPretreatmentDAO.findMaxByColumn(xColumn, plantId);
         float rangeMin = 0;
@@ -137,14 +168,8 @@ public class ScheduledServiceImpl implements ScheduledService {
         }
 
         //# save to database
-        powerCurvePointsDAO.batchInsert(plantId, curvePoints, 0);
+        powerCurvePointsDAO.batchInsert(plantId, curvePoints, CurvePointType.FFIT_CURVE.getValue());
 
         return curvePoints;
-    }
-
-    /** 对预处理的数据进行电量计算 */
-    private int calculatePower(int plantId) {
-
-        return 0;
     }
 }

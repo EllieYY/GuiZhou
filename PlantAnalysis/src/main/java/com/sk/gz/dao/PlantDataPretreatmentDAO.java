@@ -7,6 +7,7 @@ import com.sk.gz.model.curve.CurvePoint;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,4 +24,6 @@ public interface PlantDataPretreatmentDAO extends MyBatisBaseDao<PlantDataPretre
     void updateStateByRange(RangeParam param);
 
     CurvePoint findAvgByColumnAndRange(RangeParam param);
+
+    void updatePower(@Param("invalidState") int invalidState, @Param("sTime") Date sTime, @Param("eTime") Date eTime);
 }

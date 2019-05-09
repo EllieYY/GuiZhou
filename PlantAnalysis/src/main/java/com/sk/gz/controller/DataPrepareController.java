@@ -1,5 +1,6 @@
 package com.sk.gz.controller;
 
+import com.sk.gz.model.param.HisDataPrepareParam;
 import com.sk.gz.model.result.ResultBean;
 import com.sk.gz.model.result.ResultBeanUtil;
 import com.sk.gz.service.ScheduledService;
@@ -27,8 +28,8 @@ public class DataPrepareController {
 
     @ApiOperation(value = "历史数据生成")
     @RequestMapping(value = "/data/history", method = {RequestMethod.GET, RequestMethod.POST})
-    public ResultBean<String> getPlantQuotas(@RequestBody List<String> path) {
-        scheduledService.dataTransform(path);
+    public ResultBean<String> getPlantQuotas(@RequestBody HisDataPrepareParam param) {
+        scheduledService.dataTransform(param.getStartTime(), param.getEndTime(), param.isHis());
         return ResultBeanUtil.makeOkResp();
     }
 }

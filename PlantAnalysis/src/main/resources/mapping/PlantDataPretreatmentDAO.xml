@@ -257,5 +257,43 @@
     and ${filterColumn} &gt;= #{valueMin}
     and ${filterColumn} &lt; #{valueMax}
   </update>
-  
-  </mapper>
+  <update id="updatePower">
+    UPDATE plant_data_pretreatment d
+      INNER JOIN (
+        SELECT
+         two.plantId plantId,
+         two.time time,
+         two.estimatePower estimatePower,
+         IF
+         ( two.previous = 0, 0, two.current - two.previous ) intervalValue
+         FROM
+         (
+           SELECT
+             one.plantId,
+             one.time,
+             one.estimatePower,
+             IF
+             ( one.totalPower = 0, @one.totalPower, one.totalPower ) current,
+             @one.totalPower AS previous,
+             @one.totalPower := one.totalPower
+           FROM
+             plant_data_pretreatment one,
+             ( SELECT @one.totalPower := 0 ) tmp
+           WHERE
+             one.state != #{invalidState}
+             and
+             one.time &gt;= #{sTime}
+             and
+             one.time &lt; #{eTime}
+           ORDER BY
+             one.time ASC
+         ) two
+        ) comb ON d.plantId = comb.plantId
+               AND d.time = comb.time
+    SET d.actualPower = comb.intervalValue,
+      d.reductivePower = d.estimatePower - comb.intervalValue
+    where d.time &gt; #{sTime} and
+          d.time &lt; #{eTime}
+  </update>
+
+</mapper>

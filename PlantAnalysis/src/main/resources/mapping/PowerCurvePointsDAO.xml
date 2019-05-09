@@ -17,6 +17,16 @@
     from power_curve_points
     where id = #{id,jdbcType=INTEGER}
   </select>
+  <select id="findByPlantIdAndTypeAndWindASC" resultType="com.sk.gz.model.curve.CurvePoint">
+    select
+      windSpeed as "windSpeed",
+      power as "power"
+    from power_curve_points
+    where
+      plantId = #{plantId,jdbcType=INTEGER}
+      and type = #{type,jdbcType=INTEGER}
+    order by windSpeed ASC
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from power_curve_points
     where id = #{id,jdbcType=INTEGER}
