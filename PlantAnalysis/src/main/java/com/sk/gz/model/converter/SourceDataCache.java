@@ -110,9 +110,6 @@ public class SourceDataCache {
         //# 发电状态
         preData.setPowerstate(cacheState);
 
-        float startPower = cache.get(0).getGripower();
-        float endPower = cache.get(cache.size() - 1).getGripower();
-        float power = endPower - startPower;
 
         //# 数据状态 - 预处理：
         // 发电状态为故障、检修、停机时，数据状态均标记为停机
@@ -121,15 +118,13 @@ public class SourceDataCache {
                 cacheState == PowerState.ERR.getValue() ||
                 cacheState == PowerState.FIX.getValue() ||
                 cacheState == PowerState.STOP.getValue());
-        boolean isInvalid = (cacheState == PowerState.OFF_LINE.getValue() || power < 0);
+        boolean isInvalid = (cacheState == PowerState.OFF_LINE.getValue());
         preData.setState(isInvalid ? DataState.INVALID.getValue() :
                 (isStopPowerState ? DataState.STOP.getValue() : DataState.NORMAL.getValue()));
 
-        // TODO:以下计算应当根据发电状态进行调整
         //# 累计发电量
-        preData.setActualpower(power);
-        preData.setEstimatepower(power);
-        preData.setReductivepower(0.0f);
+        double totalPower = cache.get(0).getTotalpower();
+        preData.setTotalpower(totalPower);
 
         //# 风速风向
         preData.setAmbwindspeed((float)(cache.stream().mapToDouble(PlantDataInitial::getAmbwindspeed).average().getAsDouble()));
@@ -145,6 +140,11 @@ public class SourceDataCache {
 
         //# 平均桨叶角度
         preData.setBladeangle((float)(cache.stream().mapToDouble(PlantDataInitial::getHubspe).average().getAsDouble()));
+
+
+        preData.setActualpower(0.0f);
+        preData.setEstimatepower(0.0f);
+        preData.setReductivepower(0.0f);
 
         return preData;
     }

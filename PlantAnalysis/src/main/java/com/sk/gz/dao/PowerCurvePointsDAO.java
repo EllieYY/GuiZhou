@@ -15,4 +15,6 @@ public interface PowerCurvePointsDAO extends MyBatisBaseDao<PowerCurvePoints, In
     int batchInsert(@Param("plantId") int plantId, @Param("list")List<CurvePoint> points, @Param("type") int type);
 
     int deleteByType(@Param("type") int type);
+
+    
 }

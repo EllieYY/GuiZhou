@@ -1,16 +1,11 @@
 package com.sk.gz.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
 
 /**
  * plant_data_pretreatment
  * @author 
  */
-@AllArgsConstructor
-@NoArgsConstructor
 public class PlantDataPretreatment extends PlantDataPretreatmentKey implements Serializable {
     /**
      * 时间区间秒数
@@ -66,6 +61,11 @@ public class PlantDataPretreatment extends PlantDataPretreatmentKey implements S
      * 平均桨叶角度
      */
     private Float bladeangle;
+
+    /**
+     * 累计发电量
+     */
+    private Double totalpower;
 
     private static final long serialVersionUID = 1L;
 
@@ -157,6 +157,14 @@ public class PlantDataPretreatment extends PlantDataPretreatmentKey implements S
         this.bladeangle = bladeangle;
     }
 
+    public Double getTotalpower() {
+        return totalpower;
+    }
+
+    public void setTotalpower(Double totalpower) {
+        this.totalpower = totalpower;
+    }
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {
@@ -181,7 +189,8 @@ public class PlantDataPretreatment extends PlantDataPretreatmentKey implements S
             && (this.getGripower() == null ? other.getGripower() == null : this.getGripower().equals(other.getGripower()))
             && (this.getGenrpm() == null ? other.getGenrpm() == null : this.getGenrpm().equals(other.getGenrpm()))
             && (this.getAmbwinddir() == null ? other.getAmbwinddir() == null : this.getAmbwinddir().equals(other.getAmbwinddir()))
-            && (this.getBladeangle() == null ? other.getBladeangle() == null : this.getBladeangle().equals(other.getBladeangle()));
+            && (this.getBladeangle() == null ? other.getBladeangle() == null : this.getBladeangle().equals(other.getBladeangle()))
+            && (this.getTotalpower() == null ? other.getTotalpower() == null : this.getTotalpower().equals(other.getTotalpower()));
     }
 
     @Override
@@ -201,6 +210,7 @@ public class PlantDataPretreatment extends PlantDataPretreatmentKey implements S
         result = prime * result + ((getGenrpm() == null) ? 0 : getGenrpm().hashCode());
         result = prime * result + ((getAmbwinddir() == null) ? 0 : getAmbwinddir().hashCode());
         result = prime * result + ((getBladeangle() == null) ? 0 : getBladeangle().hashCode());
+        result = prime * result + ((getTotalpower() == null) ? 0 : getTotalpower().hashCode());
         return result;
     }
 
@@ -210,8 +220,6 @@ public class PlantDataPretreatment extends PlantDataPretreatmentKey implements S
         sb.append(getClass().getSimpleName());
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
-        sb.append(", time=").append(super.getTime());
-        sb.append(", plantid=").append(super.getPlantid());
         sb.append(", duration=").append(duration);
         sb.append(", state=").append(state);
         sb.append(", powerstate=").append(powerstate);
@@ -223,6 +231,7 @@ public class PlantDataPretreatment extends PlantDataPretreatmentKey implements S
         sb.append(", genrpm=").append(genrpm);
         sb.append(", ambwinddir=").append(ambwinddir);
         sb.append(", bladeangle=").append(bladeangle);
+        sb.append(", totalpower=").append(totalpower);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

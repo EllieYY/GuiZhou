@@ -28,6 +28,7 @@ HELP.md
 ### Others ###
 *.log
 *.csv
+*.xlsx
 
 ### VS Code ###
 .vscode/

@@ -58,17 +58,17 @@ public class ScheduledServiceImpl implements ScheduledService {
 //        if (filePathList.size() == 0 || filePathList == null) {
 //            filePath = "testfiles/hbq-10.csv";
 //        }
-//        for (String filePath : filePathList) {
-//            //#1 read csv
-//            List<PlantDataInitial> sourceData = CsvUtil.getCsvData(filePath, PlantDataInitial.class);
-//            log.info("plant#" + filePath + ", data size = " + sourceData.size());
-//
-//            //#2 data verify: to 10mins data
-//            pretreatment(sourceData);
-//        }
+        for (String filePath : filePathList) {
+            //#1 read csv
+            List<PlantDataInitial> sourceData = CsvUtil.getCsvData(filePath, PlantDataInitial.class);
+            log.info("plant#" + filePath + ", data size = " + sourceData.size());
+
+            //#2 data verify: to 10mins data
+            pretreatment(sourceData);
+        }
 
         //#3 filter
-//        filter(plantId);
+        filter(plantId);
 
         //#4 calculate and save.
 //        List<CurvePoint> curve = getPowerCurve(plantId,"ambWindSpeed","griPower", 0.5f);
@@ -79,14 +79,26 @@ public class ScheduledServiceImpl implements ScheduledService {
 
     /** 预处理 */
     private void pretreatment(List<PlantDataInitial> sourceData) {
+        // 【重要前提】：功率曲线已经存在
+//        List<CurvePoint> curvePoints
+
+
         sourceDataCache.initCache();
         int size = sourceData.size();
         for (int i = 0; i < size; i++) {
             boolean isDataEnd = ((i+1) == size);
+
+            if(i > 50*120) {
+                isDataEnd = true;
+            }
             PlantDataInitial data = sourceData.get(i);
 
             if (sourceDataCache.addData(data, PREPROCESS_DATA_LENGTH, isDataEnd) == 0) {
                 pretreatmentDataCache.add(sourceDataCache.getPreData(), isDataEnd);
+            }
+
+            if (isDataEnd) {
+                break;
             }
         }
     }
