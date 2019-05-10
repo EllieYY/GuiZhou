@@ -69,6 +69,10 @@ public class ScheduledServiceImpl implements ScheduledService {
     public void dataTransform(Date startTime, Date endTime, boolean isHis) {
         List<PlantLabel> plants = plantDAO.findAllIndexInfo();
 
+        // TODO:test
+        plants.clear();
+        plants.add(new PlantLabel(30210, "测试机组"));
+
         // 文件存放规则适配
         String pathPrefix = "testfiles/";
         String fileDatePattern = isHis ? "yyyy_mm/" : "yyyy_mm_dd/";
@@ -79,9 +83,6 @@ public class ScheduledServiceImpl implements ScheduledService {
 
             for (PlantLabel plant : plants) {
                 int plantId = plant.getId();
-
-                //TODO:test
-                plantId = 30210;
                 String fileName = "hbq-" + plantId + ".csv";
 
                 //#1 read csv
@@ -97,9 +98,6 @@ public class ScheduledServiceImpl implements ScheduledService {
                 //#4 update power curve.
 //            List<CurvePoint> curve = getPowerCurve(plantId,"ambWindSpeed","griPower", 0.5f);
 //            log.info(curve.toString());
-
-                // TODO:delete
-                break;
             }
 
             pre = cur;
@@ -110,8 +108,13 @@ public class ScheduledServiceImpl implements ScheduledService {
             }
 
             //# calculate power for all plant
+            Date startUpdateDate = DateUtil.dateAddDays(pre, 1, false);
             plantDataPretreatmentDAO.updatePower(DataState.INVALID.getValue(),
-                    DateUtil.dateAddDays(pre, 1, false), cur);
+                    startUpdateDate, cur);
+
+            //# 对当前时间窗内电量进行统计，存储到月电量信息表中
+            // TODO:
+
         }
     }
 

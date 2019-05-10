@@ -26,4 +26,8 @@ public interface PlantDataPretreatmentDAO extends MyBatisBaseDao<PlantDataPretre
     CurvePoint findAvgByColumnAndRange(RangeParam param);
 
     void updatePower(@Param("invalidState") int invalidState, @Param("sTime") Date sTime, @Param("eTime") Date eTime);
+
+
+    void powerStatistic();
+
 }

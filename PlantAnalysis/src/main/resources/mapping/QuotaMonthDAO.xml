@@ -4,15 +4,18 @@
   <resultMap id="BaseResultMap" type="com.sk.gz.entity.QuotaMonth">
     <id column="date" jdbcType="TIMESTAMP" property="date" />
     <id column="plantId" jdbcType="INTEGER" property="plantid" />
-    <result column="powerGeneration" jdbcType="DOUBLE" property="powergeneration" />
-    <result column="downTimeReducation" jdbcType="DOUBLE" property="downtimereducation" />
-    <result column="powerReducation" jdbcType="DOUBLE" property="powerreducation" />
-    <result column="otherReducation" jdbcType="DOUBLE" property="otherreducation" />
+    <result column="academicPower" jdbcType="DOUBLE" property="academicpower" />
+    <result column="actualPower" jdbcType="DOUBLE" property="actualpower" />
+    <result column="downtimeReduction" jdbcType="DOUBLE" property="downtimereduction" />
+    <result column="limitReduction" jdbcType="DOUBLE" property="limitreduction" />
+    <result column="otherReduction" jdbcType="DOUBLE" property="otherreduction" />
     <result column="downtime" jdbcType="BIGINT" property="downtime" />
+    <result column="validDays" jdbcType="INTEGER" property="validdays" />
+    <result column="avgWindSpeed" jdbcType="REAL" property="avgwindspeed" />
   </resultMap>
   <sql id="Base_Column_List">
-    `date`, plantId, powerGeneration, downTimeReducation, powerReducation, otherReducation, 
-    downtime
+    `date`, plantId, academicPower, actualPower, downtimeReduction, limitReduction, otherReduction, 
+    downtime, validDays, avgWindSpeed
   </sql>
   <select id="selectByPrimaryKey" parameterType="com.sk.gz.entity.QuotaMonthKey" resultMap="BaseResultMap">
     select 
@@ -27,12 +30,14 @@
       and plantId = #{plantid,jdbcType=INTEGER}
   </delete>
   <insert id="insert" parameterType="com.sk.gz.entity.QuotaMonth">
-    insert into quota_month (`date`, plantId, powerGeneration, 
-      downTimeReducation, powerReducation, otherReducation, 
-      downtime)
-    values (#{date,jdbcType=TIMESTAMP}, #{plantid,jdbcType=INTEGER}, #{powergeneration,jdbcType=DOUBLE}, 
-      #{downtimereducation,jdbcType=DOUBLE}, #{powerreducation,jdbcType=DOUBLE}, #{otherreducation,jdbcType=DOUBLE}, 
-      #{downtime,jdbcType=BIGINT})
+    insert into quota_month (`date`, plantId, academicPower, 
+      actualPower, downtimeReduction, limitReduction, 
+      otherReduction, downtime, validDays, 
+      avgWindSpeed)
+    values (#{date,jdbcType=TIMESTAMP}, #{plantid,jdbcType=INTEGER}, #{academicpower,jdbcType=DOUBLE}, 
+      #{actualpower,jdbcType=DOUBLE}, #{downtimereduction,jdbcType=DOUBLE}, #{limitreduction,jdbcType=DOUBLE}, 
+      #{otherreduction,jdbcType=DOUBLE}, #{downtime,jdbcType=BIGINT}, #{validdays,jdbcType=INTEGER}, 
+      #{avgwindspeed,jdbcType=REAL})
   </insert>
   <insert id="insertSelective" parameterType="com.sk.gz.entity.QuotaMonth">
     insert into quota_month
@@ -43,20 +48,29 @@
       <if test="plantid != null">
         plantId,
       </if>
-      <if test="powergeneration != null">
-        powerGeneration,
+      <if test="academicpower != null">
+        academicPower,
       </if>
-      <if test="downtimereducation != null">
-        downTimeReducation,
+      <if test="actualpower != null">
+        actualPower,
       </if>
-      <if test="powerreducation != null">
-        powerReducation,
+      <if test="downtimereduction != null">
+        downtimeReduction,
       </if>
-      <if test="otherreducation != null">
-        otherReducation,
+      <if test="limitreduction != null">
+        limitReduction,
+      </if>
+      <if test="otherreduction != null">
+        otherReduction,
       </if>
       <if test="downtime != null">
         downtime,
+      </if>
+      <if test="validdays != null">
+        validDays,
+      </if>
+      <if test="avgwindspeed != null">
+        avgWindSpeed,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -66,40 +80,58 @@
       <if test="plantid != null">
         #{plantid,jdbcType=INTEGER},
       </if>
-      <if test="powergeneration != null">
-        #{powergeneration,jdbcType=DOUBLE},
+      <if test="academicpower != null">
+        #{academicpower,jdbcType=DOUBLE},
       </if>
-      <if test="downtimereducation != null">
-        #{downtimereducation,jdbcType=DOUBLE},
+      <if test="actualpower != null">
+        #{actualpower,jdbcType=DOUBLE},
       </if>
-      <if test="powerreducation != null">
-        #{powerreducation,jdbcType=DOUBLE},
+      <if test="downtimereduction != null">
+        #{downtimereduction,jdbcType=DOUBLE},
       </if>
-      <if test="otherreducation != null">
-        #{otherreducation,jdbcType=DOUBLE},
+      <if test="limitreduction != null">
+        #{limitreduction,jdbcType=DOUBLE},
+      </if>
+      <if test="otherreduction != null">
+        #{otherreduction,jdbcType=DOUBLE},
       </if>
       <if test="downtime != null">
         #{downtime,jdbcType=BIGINT},
+      </if>
+      <if test="validdays != null">
+        #{validdays,jdbcType=INTEGER},
+      </if>
+      <if test="avgwindspeed != null">
+        #{avgwindspeed,jdbcType=REAL},
       </if>
     </trim>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.sk.gz.entity.QuotaMonth">
     update quota_month
     <set>
-      <if test="powergeneration != null">
-        powerGeneration = #{powergeneration,jdbcType=DOUBLE},
+      <if test="academicpower != null">
+        academicPower = #{academicpower,jdbcType=DOUBLE},
       </if>
-      <if test="downtimereducation != null">
-        downTimeReducation = #{downtimereducation,jdbcType=DOUBLE},
+      <if test="actualpower != null">
+        actualPower = #{actualpower,jdbcType=DOUBLE},
       </if>
-      <if test="powerreducation != null">
-        powerReducation = #{powerreducation,jdbcType=DOUBLE},
+      <if test="downtimereduction != null">
+        downtimeReduction = #{downtimereduction,jdbcType=DOUBLE},
       </if>
-      <if test="otherreducation != null">
-        otherReducation = #{otherreducation,jdbcType=DOUBLE},
+      <if test="limitreduction != null">
+        limitReduction = #{limitreduction,jdbcType=DOUBLE},
+      </if>
+      <if test="otherreduction != null">
+        otherReduction = #{otherreduction,jdbcType=DOUBLE},
       </if>
       <if test="downtime != null">
         downtime = #{downtime,jdbcType=BIGINT},
+      </if>
+      <if test="validdays != null">
+        validDays = #{validdays,jdbcType=INTEGER},
+      </if>
+      <if test="avgwindspeed != null">
+        avgWindSpeed = #{avgwindspeed,jdbcType=REAL},
       </if>
     </set>
     where `date` = #{date,jdbcType=TIMESTAMP}
@@ -107,11 +139,14 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="com.sk.gz.entity.QuotaMonth">
     update quota_month
-    set powerGeneration = #{powergeneration,jdbcType=DOUBLE},
-      downTimeReducation = #{downtimereducation,jdbcType=DOUBLE},
-      powerReducation = #{powerreducation,jdbcType=DOUBLE},
-      otherReducation = #{otherreducation,jdbcType=DOUBLE},
-      downtime = #{downtime,jdbcType=BIGINT}
+    set academicPower = #{academicpower,jdbcType=DOUBLE},
+      actualPower = #{actualpower,jdbcType=DOUBLE},
+      downtimeReduction = #{downtimereduction,jdbcType=DOUBLE},
+      limitReduction = #{limitreduction,jdbcType=DOUBLE},
+      otherReduction = #{otherreduction,jdbcType=DOUBLE},
+      downtime = #{downtime,jdbcType=BIGINT},
+      validDays = #{validdays,jdbcType=INTEGER},
+      avgWindSpeed = #{avgwindspeed,jdbcType=REAL}
     where `date` = #{date,jdbcType=TIMESTAMP}
       and plantId = #{plantid,jdbcType=INTEGER}
   </update>

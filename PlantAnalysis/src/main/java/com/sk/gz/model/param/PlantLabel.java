@@ -2,6 +2,7 @@ package com.sk.gz.model.param;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -11,6 +12,7 @@ import springfox.documentation.annotations.ApiIgnore;
  * @Date : 2019/4/22
  */
 @Data
+@AllArgsConstructor
 public class PlantLabel {
     @ApiModelProperty(value = "风机id")
     @JsonProperty("id")

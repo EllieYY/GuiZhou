@@ -29,7 +29,6 @@ public class PowerAnalysisController {
     @Resource
     PowerInfoService powerInfoService;
 
-
     @ApiOperation(value = "指标统计")
     @RequestMapping(value = "/power/indicators", method = {RequestMethod.GET, RequestMethod.POST})
     public ResultBean<List<PowerIndicators>> getPlantPowerDetails() {

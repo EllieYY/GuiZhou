@@ -296,4 +296,56 @@
           d.time &lt; #{eTime}
   </update>
 
+  <sql id="statistics_by_date">
+    (SELECT
+    #{monthBegin} AS date,
+    plantId AS plantId,
+    sum( estimatePower ) AS academicPower,
+    sum( actualPower ) AS actualPower,
+    sum( CASE WHEN state = #{stopState} THEN reductivePower ELSE 0 END ) AS downtimeReduction,
+    sum( CASE WHEN state = #{limitState} THEN reductivePower ELSE 0 END ) AS limitReduction,
+    sum( CASE WHEN state = #{underState} OR state = #{overState} THEN reductivePower ELSE 0 END ) AS otherReduction,
+    sum( CASE WHEN state = #{stopState} THEN duration ELSE 0 END ) AS downtime,
+    #{validDays} AS validDays,
+    avg( ambWindSpeed ) AS avgWindSpeed
+    FROM
+    plant_data_pretreatment
+    WHERE
+    state != #{invalidState}
+    AND time &gt;= #{filtTimeBegin}
+    AND time &lt; #{filtTimeEnd}
+    GROUP BY
+    plantId)
+  </sql>
+  <update id="powerStatistic">
+    <selectKey keyProperty="count" resultType="int" order="BEFORE">
+      select count(*) from quota_month where date = #{monthBegin}
+    </selectKey>
+    <if test="count > 0">
+      UPDATE quota_month
+      INNER JOIN
+      <include refid="statistics_by_date">
+        <property name="monthBegin" value="#{monthBegin}" />
+      </include>
+      d ON quota_month.plantId = d.plantId
+      AND quota_month.date = d.date
+      SET
+      quota_month.academicPower = d.academicPower,
+      quota_month.actualPower = d.actualPower,
+      quota_month.downtimeReduction = d.downtimeReduction,
+      quota_month.limitReduction = d.limitReduction,
+      quota_month.otherReduction = d.otherReduction,
+      quota_month.downtime = d.downtime,
+      quota_month.validDays = d.validDays,
+      quota_month.avgWindSpeed = d.avgWindSpeed
+    </if>
+    <if test="count==0">
+      INSERT INTO quota_month
+      <include refid="statistics_by_date">
+        <property name="monthBegin" value="#{monthBegin}" />
+      </include>
+    </if>
+
+  </update>
+
 </mapper>

@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * @Description : 日期工具
@@ -128,6 +129,19 @@ public class DateUtil {
         CALENDAR.set(Calendar.DAY_OF_MONTH, CALENDAR.getActualMinimum(Calendar.DAY_OF_MONTH));
         return CALENDAR.getTime();
     }
+
+    /**
+     * 获取当月天数
+     *
+     * @param
+     * @return
+     */
+    public static int getDaysOfMonth(Date date){
+        CALENDAR.setTime(dateTimeToDate(date));
+        int day = CALENDAR.getActualMaximum(Calendar.DATE);
+        return day;
+    }
+
 
     /**
      * 月份个数
@@ -267,9 +281,9 @@ public class DateUtil {
 
 
     /** 统计两个日期之间的天数，不包含今天 */
-    public static int daysBetweenDate(Date startDate, String endDate) {
+    public static int daysBetweenDate(Date startDate, Date endDate) {
         Date dateEnd = dateParse(dateFormat(startDate, DATE_PATTERN), DATE_PATTERN);
-        Date dateStart = dateParse(endDate, DATE_PATTERN);
+        Date dateStart = dateParse(dateFormat(endDate, DATE_PATTERN), DATE_PATTERN);
 
         return (int) ((dateEnd.getTime() - dateStart.getTime())/1000/60/60/24);
     }
