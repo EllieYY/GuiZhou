@@ -2,6 +2,7 @@ package com.sk.gz.controller;
 
 import com.sk.gz.dao.PlantDAO;
 import com.sk.gz.model.power.Availability;
+import com.sk.gz.model.power.BAType;
 import com.sk.gz.model.power.MonthPlantPower;
 import com.sk.gz.model.power.PowerIndicators;
 import com.sk.gz.model.power.PlantPower;
@@ -44,12 +45,12 @@ public class PowerAnalysisController {
     @ApiOperation(value = "利用率统计")
     @RequestMapping(value = "/station/power/tba", method = {RequestMethod.GET, RequestMethod.POST})
     public ResultBean<List<Availability>> getPlantTBA() {
-        return ResultBeanUtil.makeOkResp(powerInfoService.getAvailabilities("tba"));
+        return ResultBeanUtil.makeOkResp(powerInfoService.getAvailabilities(BAType.TBA.getValue()));
     }
     @ApiOperation(value = "利用率统计")
     @RequestMapping(value = "/station/power/pba", method = {RequestMethod.GET, RequestMethod.POST})
     public ResultBean<List<Availability>> getPlantPBA() {
-        return ResultBeanUtil.makeOkResp(powerInfoService.getAvailabilities("pba"));
+        return ResultBeanUtil.makeOkResp(powerInfoService.getAvailabilities(BAType.PBA.getValue()));
     }
 
     @ApiOperation(value = "发电量分布")

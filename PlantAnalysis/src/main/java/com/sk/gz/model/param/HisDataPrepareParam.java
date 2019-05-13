@@ -14,11 +14,11 @@ import java.util.Date;
 @Data
 public class HisDataPrepareParam {
     @JsonProperty("sTime")
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private Date startTime;
 
     @JsonProperty("eTime")
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private Date endTime;
 
     @JsonProperty("hisFlag")

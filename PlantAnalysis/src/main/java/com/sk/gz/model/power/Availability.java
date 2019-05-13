@@ -20,4 +20,14 @@ public class Availability {
     @ApiModelProperty(value = "利用率")
     @JsonProperty("value")
     private float availability;
+
+    public Availability(String name, Float availability) {
+        this.name = name;
+
+        if (availability == null) {
+            this.availability = 0;
+        } else {
+            this.availability = availability;
+        }
+    }
 }

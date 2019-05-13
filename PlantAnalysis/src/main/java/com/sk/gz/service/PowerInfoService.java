@@ -19,7 +19,7 @@ public interface PowerInfoService {
 
     List<MonthPlantPower> getPowerInfoPerMonth();
 
-    List<Availability> getAvailabilities(String type);
+    List<Availability> getAvailabilities(int type);
 
     List<PlantPower> getPowerPreview();
 

@@ -76,7 +76,7 @@ public class ScheduledServiceImpl implements ScheduledService {
 
         // 文件存放规则适配
         String pathPrefix = "testfiles/";
-        String fileDatePattern = isHis ? "yyyy_mm/" : "yyyy_mm_dd/";
+        String fileDatePattern = isHis ? "yyyy_MM/" : "yyyy_MM_dd/";
         Date cur = startTime;
         Date pre = cur;
         while (cur.before(endTime)) {
@@ -86,19 +86,20 @@ public class ScheduledServiceImpl implements ScheduledService {
                 int plantId = plant.getId();
                 String fileName = "hbq-" + plantId + ".csv";
 
-                //#1 read csv
-                List<PlantDataInitial> sourceData = CsvUtil.getCsvData(filePath + fileName, PlantDataInitial.class);
-                log.info("plant#" + filePath + fileName + ", data size = " + sourceData.size());
+//                //#1 read csv
+//                List<PlantDataInitial> sourceData = CsvUtil.getCsvData(filePath + fileName, PlantDataInitial.class);
+//                log.info("plant#" + filePath + fileName + ", data size = " + sourceData.size());
+//
+//
+//                //#2 data verify: to 10mins data
+//                pretreatment(plantId, sourceData);
 
-                //#2 data verify: to 10mins data
-                pretreatment(plantId, sourceData);
+//                //#3 filter
+//                filter(plantId);
 
-                //#3 filter
-                filter(plantId);
-
-                //#4 update power curve.
-//            List<CurvePoint> curve = getPowerCurve(plantId,"ambWindSpeed","griPower", 0.5f);
-//            log.info(curve.toString());
+//                //#4 update power curve.
+//                List<CurvePoint> curve = getPowerCurve(plantId,"ambWindSpeed","griPower", 0.5f);
+//                log.info(curve.toString());
             }
 
             pre = cur;
@@ -109,13 +110,13 @@ public class ScheduledServiceImpl implements ScheduledService {
             }
             cur = cur.after(endTime) ? endTime : cur;
 
-            //# calculate power for all plant
-            Date startUpdateDate = DateUtil.dateAddDays(pre, 1, false);
+//            //# calculate power for all plant
+            Date startUpdateDate = DateUtil.dateAddDays(pre, -1, false);
             plantDataPretreatmentDAO.updatePower(DataState.INVALID.getValue(),
                     startUpdateDate, cur);
 
             //# 对当前时间窗内电量进行统计，存储到月电量信息表中
-            MonthQuotaParam param = new MonthQuotaParam(startUpdateDate, cur);
+            MonthQuotaParam param = new MonthQuotaParam(pre, cur);
             plantDataPretreatmentDAO.powerStatistic(param);
         }
     }

@@ -38,6 +38,7 @@ public class SourceDataCache {
 
         //# check time length or month changed.
         Date datatime = data.getDatatime();
+
         Date monthBegin = DateUtil.getFirstDateOfMonth(datatime);
         if ((datatime.getTime() - cacheStartTime.getTime()) >= limit ||
                 monthBegin.getTime() != cacheMonthBegin.getTime()) {

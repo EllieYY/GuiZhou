@@ -10,5 +10,7 @@ spring:
 mybatis:
   mapper-locations: classpath:mapping/*DAO.xml
   type-aliases-package: com.sk.gz.entity
+#  configuration:
+#      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 

@@ -12,10 +12,10 @@ import java.util.Date;
  */
 public class PlantDataInitial implements Serializable {
     /**
-     * 数据时间
+     * 数据时间：注意时间格式中 HH表示24小时制，hh表示12小时制
      */
    @CsvBindByName(column = "datetime")
-   @CsvDate("yyyy/MM/dd_hh:mm:ss")
+   @CsvDate(value = "yyyy/MM/dd_HH:mm:ss")
    private Date datatime;
 
     /**

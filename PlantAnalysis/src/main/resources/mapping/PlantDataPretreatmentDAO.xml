@@ -304,8 +304,8 @@
     sum( actualPower ) AS actualPower,
     sum( CASE WHEN state = #{stopState} THEN reductivePower ELSE 0 END ) AS downtimeReduction,
     sum( CASE WHEN state = #{limitState} THEN reductivePower ELSE 0 END ) AS limitReduction,
-    sum( CASE WHEN state = #{underState} OR state = #{overState} THEN reductivePower ELSE 0 END ) AS otherReduction,
-    sum( CASE WHEN state = #{stopState} THEN duration ELSE 0 END ) AS downtime,
+    sum( CASE WHEN state != #{stopState} AND state != #{limitState} THEN reductivePower ELSE 0 END ) AS otherReduction,
+    sum( CASE WHEN state = #{stopState} THEN CONVERT(duration/1000, DECIMAL(10, 0)) ELSE 0 END ) AS downtime,
     #{validDays} AS validDays,
     avg( ambWindSpeed ) AS avgWindSpeed
     FROM
@@ -326,6 +326,14 @@
       INNER JOIN
       <include refid="statistics_by_date">
         <property name="monthBegin" value="#{monthBegin}" />
+        <property name="stopState" value="#{stopState}" />
+        <property name="limitState" value="#{limitState}" />
+        <property name="underState" value="#{underState}" />
+        <property name="overState" value="#{overState}" />
+        <property name="validDays" value="#{validDays}" />
+        <property name="invalidState" value="#{invalidState}" />
+        <property name="filtTimeBegin" value="#{filtTimeBegin}" />
+        <property name="filtTimeEnd" value="#{filtTimeEnd}" />
       </include>
       d ON quota_month.plantId = d.plantId
       AND quota_month.date = d.date
@@ -343,6 +351,14 @@
       INSERT INTO quota_month
       <include refid="statistics_by_date">
         <property name="monthBegin" value="#{monthBegin}" />
+        <property name="stopState" value="#{stopState}" />
+        <property name="limitState" value="#{limitState}" />
+        <property name="underState" value="#{underState}" />
+        <property name="overState" value="#{overState}" />
+        <property name="validDays" value="#{validDays}" />
+        <property name="invalidState" value="#{invalidState}" />
+        <property name="filtTimeBegin" value="#{filtTimeBegin}" />
+        <property name="filtTimeEnd" value="#{filtTimeEnd}" />
       </include>
     </if>
 

@@ -3,10 +3,11 @@ package com.sk.gz.model.power;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,21 +18,8 @@ import java.util.List;
 @ApiModel("风机逐月统计")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class MonthPlantPower {
-
-    @Data
-    public class MonthPower {
-        @JsonProperty("time")
-        Date month;
-
-        @JsonProperty("value")
-        float power;
-
-        public MonthPower(Date month, float power) {
-            this.month = month;
-            this.power = power;
-        }
-    }
 
     @ApiModelProperty(value = "风机名称")
     @JsonProperty("name")
@@ -41,8 +29,4 @@ public class MonthPlantPower {
     @JsonProperty("data")
     private List<MonthPower> powers;
 
-    public MonthPlantPower(String name, List<MonthPower> powers) {
-        this.name = name;
-        this.powers = powers;
-    }
 }

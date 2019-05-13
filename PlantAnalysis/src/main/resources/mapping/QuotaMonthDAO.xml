@@ -24,6 +24,80 @@
     where `date` = #{date,jdbcType=TIMESTAMP}
       and plantId = #{plantid,jdbcType=INTEGER}
   </select>
+  <select id="findSumById" resultType="com.sk.gz.model.power.PowerIndicators">
+    SELECT
+      b.name AS name,
+      sum(a.actualPower) as actualPower,
+      sum(a.academicPower) as academicPower,
+      sum(a.academicPower) - sum(a.actualPower) as totalReduction,
+      sum(a.downtimeReduction) as downtimeReduction ,
+      sum(a.limitReduction) as limitReduction,
+      sum(a.otherReduction) as unknownReduction,
+      CONVERT((sum(a.validDays)*24*3600-sum(a.downtime))/(sum(a.validDays)*24*3600), DECIMAL(10, 2)) as tba,
+      CONVERT(sum(a.actualPower)/sum(a.academicPower), DECIMAL(10, 2)) as pba
+    FROM
+      quota_month a,
+      plant b
+    WHERE
+      a.plantId = b.id
+    GROUP BY a.plantId, b.name
+  </select>
+  <select id="findActualPowerByPlantId" resultType="com.sk.gz.model.power.MonthPower">
+    SELECT
+      a.date AS month,
+      a.actualPower AS power
+    FROM
+      quota_month a
+    WHERE
+      a.plantId = #{plantId}
+  </select>
+  <select id="findTBA" resultType="com.sk.gz.model.power.Availability">
+    SELECT
+      b.name AS name,
+      CONVERT((sum(a.validDays)*24*3600-sum(a.downtime))/(sum(a.validDays)*24*3600), DECIMAL(10, 2)) as availability
+    FROM
+      quota_month a,
+      plant b
+    WHERE
+      a.plantId = b.id
+    GROUP BY a.plantId
+  </select>
+  <select id="findPBA" resultType="com.sk.gz.model.power.Availability">
+    SELECT
+      b.name AS name,
+      CONVERT(sum(a.actualPower)/sum(a.academicPower), DECIMAL(10, 2)) as availability
+    FROM
+      quota_month a,
+      plant b
+    WHERE
+      a.plantId = b.id
+    GROUP BY a.plantId
+  </select>
+  <select id="findPlantPowerPreview" resultType="com.sk.gz.model.power.PlantPower">
+    SELECT
+      b.name AS name,
+      sum(a.actualPower) as power,
+      sum(a.academicPower) - sum(a.actualPower) as reduction
+    FROM
+      quota_month a,
+      plant b
+    WHERE
+      a.plantId = b.id
+    GROUP BY a.plantId
+  </select>
+  <select id="findReducations" resultType="com.sk.gz.model.power.PlantReduction">
+    SELECT
+      b.name AS name,
+      sum(a.downtimeReduction) as downtimeReduction ,
+      sum(a.limitReduction) as limitReduction,
+      sum(a.otherReduction) as unknownReduction
+    FROM
+      quota_month a,
+      plant b
+    WHERE
+      a.plantId = b.id
+    GROUP BY a.plantId
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="com.sk.gz.entity.QuotaMonthKey">
     delete from quota_month
     where `date` = #{date,jdbcType=TIMESTAMP}
