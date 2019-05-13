@@ -12,6 +12,9 @@ import java.util.Date;
  */
 @Data
 public class MonthQuotaParam {
+    /** 用来判断插入还是更新 */
+    private int count;
+
     /** 过滤数据的时间范围 */
     private Date filtTimeBegin;
     private Date filtTimeEnd;

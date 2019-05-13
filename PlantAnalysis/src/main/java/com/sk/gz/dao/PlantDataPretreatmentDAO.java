@@ -2,6 +2,7 @@ package com.sk.gz.dao;
 
 import com.sk.gz.entity.PlantDataPretreatment;
 import com.sk.gz.entity.PlantDataPretreatmentKey;
+import com.sk.gz.model.converter.MonthQuotaParam;
 import com.sk.gz.model.converter.RangeParam;
 import com.sk.gz.model.curve.CurvePoint;
 import org.apache.ibatis.annotations.Param;
@@ -28,6 +29,6 @@ public interface PlantDataPretreatmentDAO extends MyBatisBaseDao<PlantDataPretre
     void updatePower(@Param("invalidState") int invalidState, @Param("sTime") Date sTime, @Param("eTime") Date eTime);
 
 
-    void powerStatistic();
+    void powerStatistic(MonthQuotaParam param);
 
 }

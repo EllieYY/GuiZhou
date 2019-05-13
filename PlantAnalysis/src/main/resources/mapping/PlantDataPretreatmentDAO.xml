@@ -317,7 +317,7 @@
     GROUP BY
     plantId)
   </sql>
-  <update id="powerStatistic">
+  <insert id="powerStatistic" parameterType="com.sk.gz.model.converter.MonthQuotaParam">
     <selectKey keyProperty="count" resultType="int" order="BEFORE">
       select count(*) from quota_month where date = #{monthBegin}
     </selectKey>
@@ -346,6 +346,6 @@
       </include>
     </if>
 
-  </update>
+  </insert>
 
 </mapper>

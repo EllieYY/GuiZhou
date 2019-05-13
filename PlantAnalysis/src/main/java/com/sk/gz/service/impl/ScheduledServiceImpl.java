@@ -9,6 +9,7 @@ import com.sk.gz.entity.PowerCurvePoints;
 import com.sk.gz.model.converter.CurvePointType;
 import com.sk.gz.model.converter.DataState;
 import com.sk.gz.model.converter.FilterParam;
+import com.sk.gz.model.converter.MonthQuotaParam;
 import com.sk.gz.model.converter.QuartileFilter;
 import com.sk.gz.model.converter.RangeParam;
 import com.sk.gz.model.converter.SourceDataCache;
@@ -71,7 +72,7 @@ public class ScheduledServiceImpl implements ScheduledService {
 
         // TODO:test
         plants.clear();
-        plants.add(new PlantLabel(30210, "测试机组"));
+//        plants.add(new PlantLabel(30210, "测试机组"));
 
         // 文件存放规则适配
         String pathPrefix = "testfiles/";
@@ -106,6 +107,7 @@ public class ScheduledServiceImpl implements ScheduledService {
             } else {
                 cur = DateUtil.dateAddDays(cur, 1, false);
             }
+            cur = cur.after(endTime) ? endTime : cur;
 
             //# calculate power for all plant
             Date startUpdateDate = DateUtil.dateAddDays(pre, 1, false);
@@ -113,8 +115,8 @@ public class ScheduledServiceImpl implements ScheduledService {
                     startUpdateDate, cur);
 
             //# 对当前时间窗内电量进行统计，存储到月电量信息表中
-            // TODO:
-
+            MonthQuotaParam param = new MonthQuotaParam(startUpdateDate, cur);
+            plantDataPretreatmentDAO.powerStatistic(param);
         }
     }
 
