@@ -14,7 +14,7 @@ import java.util.List;
 public interface PowerCurvePointsDAO extends MyBatisBaseDao<PowerCurvePoints, Integer> {
     int batchInsert(@Param("plantId") int plantId, @Param("list")List<CurvePoint> points, @Param("type") int type);
 
-    int deleteByType(@Param("type") int type);
+    int deleteByType(@Param("plantId") int plantId, @Param("type") int type);
 
     List<CurvePoint> findByPlantIdAndTypeAndWindASC(@Param("plantId") int plantId, @Param("type") int type);
 

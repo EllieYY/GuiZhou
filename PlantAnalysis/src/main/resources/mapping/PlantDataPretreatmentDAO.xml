@@ -239,23 +239,91 @@
   </select>
   <select id="findAvgByColumnAndRange" parameterType="com.sk.gz.model.converter.RangeParam" resultType="com.sk.gz.model.curve.CurvePoint">
     SELECT
-    avg(${targetColumn}) as "power",
-    avg(${filterColumn}) as "windSpeed"
+      avg(${targetColumn}) as "power",
+      avg(${filterColumn}) as "windSpeed"
+    FROM plant_data_pretreatment
+    WHERE
+      plantId = #{plantId,jdbcType=INTEGER}
+      and `state` = #{validState}
+      and ${filterColumn} &gt;= #{valueMin}
+      and ${filterColumn} &lt; #{valueMax}
+  </select>
+  <select id="findStateStatisticsByPlantId" resultType="com.sk.gz.model.curve.StateStatistics">
+    SELECT
+      CONVERT ( SUM( IF ( state = #{dataType.stopState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS downtime,
+      CONVERT ( SUM( IF ( state = #{dataType.limitState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS `limit`,
+      CONVERT ( SUM( IF ( state = #{dataType.underState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS arrears,
+      CONVERT ( SUM( IF ( state = #{dataType.overState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS extra,
+      CONVERT ( SUM( IF ( state = #{dataType.normalState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS normal,
+      CONVERT ( SUM( IF ( state = #{dataType.invalidState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS invalid
+    FROM
+      plant_data_pretreatment
+    WHERE
+      plantId = #{plantId}
+  </select>
+  <select id="findSourceData" resultType="com.sk.gz.model.curve.SourcePoint">
+    SELECT
+      state AS status,
+      griPower AS power,
+      ambWindSpeed AS windSpeed
+    FROM
+      plant_data_pretreatment
+    WHERE
+      plantId = #{plantId}
+
+  </select>
+  <select id="findSourceDataByColumn" resultType="com.sk.gz.model.curve.CrossPoint">
+    SELECT
+      ${xColumn} AS x,
+      ${yColumn} AS y,
+      `time` AS `time`,
+      `state` AS `state`
     FROM plant_data_pretreatment
     WHERE plantId = #{plantId,jdbcType=INTEGER}
-    and `state` = #{validState}
-    and ${filterColumn} &gt;= #{valueMin}
-    and ${filterColumn} &lt; #{valueMax}
   </select>
+  <select id="findHistogramByColumn" resultType="com.sk.gz.model.curve.HistogramPoint">
+    SELECT
+      d.scaleR * #{scaleV} AS scale,
+      count( * ) AS value
+    FROM (
+      SELECT
+        floor( ${xColumn} / #{scaleV} ) AS scaleR
+      FROM plant_data_pretreatment
+      WHERE plantId = #{plantId,jdbcType=INTEGER}
+      ) d
+    GROUP BY
+      scale
+  </select>
+  <select id="findCurvePointByTime" resultType="com.sk.gz.model.curve.CurvePoint">
+    SELECT
+      avg(d.ambWindSpeed) as windSpeed,
+      avg(d.griPower) as power
+    FROM (
+      SELECT
+        ambWindSpeed,
+        griPower,
+        floor( ambWindSpeed / #{scaleV} ) AS scaleR
+      FROM plant_data_pretreatment
+      WHERE
+        plantId = #{plantId,jdbcType=INTEGER} and
+        time &gt; #{sTime} and
+        time &lt; #{eTime}
+    ) d
+    GROUP BY
+      d.scaleR
+  </select>
+
   <update id="updateStateByRange" parameterType="com.sk.gz.model.converter.RangeParam">
     update plant_data_pretreatment
-    set `state` = (case when ${targetColumn} &lt; #{rangeMin} then #{minState}
-    when ${targetColumn} &gt; #{rangeMax} then #{maxState}
-    else #{validState} end)
-    where plantId = #{plantId}
-    and `state` = #{validState}
-    and ${filterColumn} &gt;= #{valueMin}
-    and ${filterColumn} &lt; #{valueMax}
+    set `state` = (
+      case when ${targetColumn} &lt; #{rangeMin} then #{minState}
+      when ${targetColumn} &gt; #{rangeMax} then #{maxState}
+      else #{validState} end)
+    where
+      plantId = #{plantId}
+      and `state` = #{validState}
+      and ${filterColumn} &gt;= #{valueMin}
+      and ${filterColumn} &lt; #{valueMax}
   </update>
   <update id="updatePower">
     UPDATE plant_data_pretreatment d
@@ -281,10 +349,9 @@
              ( SELECT @one.totalPower := 0 ) tmp
            WHERE
              one.state != #{invalidState}
-             and
-             one.time &gt;= #{sTime}
-             and
-             one.time &lt; #{eTime}
+             and one.plantId = #{plantId,jdbcType=INTEGER}
+             and one.time &gt;= #{sTime}
+             and one.time &lt; #{eTime}
            ORDER BY
              one.time ASC
          ) two
@@ -298,24 +365,23 @@
 
   <sql id="statistics_by_date">
     (SELECT
-    #{monthBegin} AS date,
-    plantId AS plantId,
-    sum( estimatePower ) AS academicPower,
-    sum( actualPower ) AS actualPower,
-    sum( CASE WHEN state = #{stopState} THEN reductivePower ELSE 0 END ) AS downtimeReduction,
-    sum( CASE WHEN state = #{limitState} THEN reductivePower ELSE 0 END ) AS limitReduction,
-    sum( CASE WHEN state != #{stopState} AND state != #{limitState} THEN reductivePower ELSE 0 END ) AS otherReduction,
-    sum( CASE WHEN state = #{stopState} THEN CONVERT(duration/1000, DECIMAL(10, 0)) ELSE 0 END ) AS downtime,
-    #{validDays} AS validDays,
-    avg( ambWindSpeed ) AS avgWindSpeed
-    FROM
-    plant_data_pretreatment
+      #{monthBegin} AS date,
+      plantId AS plantId,
+      sum( estimatePower ) AS academicPower,
+      sum( actualPower ) AS actualPower,
+      sum( CASE WHEN state = #{stopState} THEN reductivePower ELSE 0 END ) AS downtimeReduction,
+      sum( CASE WHEN state = #{limitState} THEN reductivePower ELSE 0 END ) AS limitReduction,
+      sum( CASE WHEN state != #{stopState} AND state != #{limitState} THEN reductivePower ELSE 0 END ) AS otherReduction,
+      sum( CASE WHEN state = #{stopState} THEN CONVERT(duration/1000, DECIMAL(10, 0)) ELSE 0 END ) AS downtime,
+      #{validDays} AS validDays,
+      avg( ambWindSpeed ) AS avgWindSpeed
+    FROM plant_data_pretreatment
     WHERE
-    state != #{invalidState}
-    AND time &gt;= #{filtTimeBegin}
-    AND time &lt; #{filtTimeEnd}
+      state != #{invalidState}
+      AND time &gt;= #{filtTimeBegin}
+      AND time &lt; #{filtTimeEnd}
     GROUP BY
-    plantId)
+      plantId)
   </sql>
   <insert id="powerStatistic" parameterType="com.sk.gz.model.converter.MonthQuotaParam">
     <selectKey keyProperty="count" resultType="int" order="BEFORE">

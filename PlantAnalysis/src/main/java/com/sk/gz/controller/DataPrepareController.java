@@ -29,7 +29,12 @@ public class DataPrepareController {
     @ApiOperation(value = "历史数据生成")
     @RequestMapping(value = "/data/history", method = {RequestMethod.GET, RequestMethod.POST})
     public ResultBean<String> getPlantQuotas(@RequestBody HisDataPrepareParam param) {
-        scheduledService.dataTransform(param.getStartTime(), param.getEndTime(), param.isHis());
+        scheduledService.dataTransform(
+                param.getStartTime(),
+                param.getEndTime(),
+                param.isHis(),
+                param.getPathPrefix(),
+                param.getIdBase());
         return ResultBeanUtil.makeOkResp();
     }
 }

@@ -54,7 +54,7 @@ public class QuartileFilter {
                         rangeMax, DataState.OVER.getValue(),
                         rangeMin, rangeMax);
                 List<Float> data = plantDataPretreatmentDAO.findByColumnAndRange(rangeParam);
-                log.info("[rang param] = " + rangeParam);
+//                log.info("[rang param] = " + rangeParam);
 
                 //#2 calculate filt factor
                 FL = rangeMin;

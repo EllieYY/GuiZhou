@@ -16,13 +16,17 @@ import java.util.Date;
 @ApiModel(description = "电厂整体概况")
 @Data
 public class StationPreview {
+    @ApiModelProperty(value = "名称")
+    @JsonProperty("name")
+    private String name;
+
     @ApiModelProperty(value = "电厂数据开始时间")
     @JsonProperty("startTime")
-    private Date start;
+    private Date startTime;
 
     @ApiModelProperty(value = "电厂数据结束时间")
     @JsonProperty("endTime")
-    private Date end;
+    private Date endTime;
 
     @ApiModelProperty(value = "实际发电量")
     @JsonProperty("power")
@@ -47,15 +51,4 @@ public class StationPreview {
     @ApiModelProperty(value = "电量可利用率")
     @JsonProperty("pba")
     private float pba;
-
-    public StationPreview(Date start, Date end, float powerGeneration, float reduction, float reductionRatio, float averageWindSpeed, float tba, float pba) {
-        this.start = start;
-        this.end = end;
-        this.powerGeneration = powerGeneration;
-        this.reduction = reduction;
-        this.reductionRatio = reductionRatio;
-        this.averageWindSpeed = averageWindSpeed;
-        this.tba = tba;
-        this.pba = pba;
-    }
 }

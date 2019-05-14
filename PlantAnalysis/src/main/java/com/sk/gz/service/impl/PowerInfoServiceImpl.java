@@ -38,7 +38,7 @@ public class PowerInfoServiceImpl implements PowerInfoService {
     /** 电量关键指标统计 - 风机月电量信息累加 */
     @Override
     public List<PowerIndicators> getPowerIndicators() {
-        return quotaMonthDAO.findSumById();
+        return quotaMonthDAO.findPowerIndicators();
 
 //        Random random = new Random(47);
 //        List<PowerIndicators> result = new ArrayList<PowerIndicators>();

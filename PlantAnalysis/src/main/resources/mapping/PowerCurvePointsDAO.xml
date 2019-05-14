@@ -32,8 +32,10 @@
     where id = #{id,jdbcType=INTEGER}
   </delete>
     <delete id="deleteByType">
-        delete from power_curve_points
-        where type = #{type,jdbcType=BIT}
+      delete from power_curve_points
+      where
+        type = #{type,jdbcType=BIT}
+        and plantId = #{plantId,jdbcType=INTEGER}
     </delete>
     <insert id="insert" parameterType="com.sk.gz.entity.PowerCurvePoints">
     insert into power_curve_points (id, plantId, windSpeed, 

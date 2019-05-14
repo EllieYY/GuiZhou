@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import springfox.documentation.annotations.ApiIgnore;
 
 /**
@@ -13,6 +14,7 @@ import springfox.documentation.annotations.ApiIgnore;
  */
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class PlantLabel {
     @ApiModelProperty(value = "风机id")
     @JsonProperty("id")

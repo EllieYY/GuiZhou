@@ -27,5 +27,5 @@ public class CrossAnalysisParam {
 
     @ApiModelProperty(value = "直方图指标")
     @JsonProperty("densityNum")
-    private int densityScale;
+    private int densityNum;
 }

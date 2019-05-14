@@ -24,7 +24,7 @@
     where `date` = #{date,jdbcType=TIMESTAMP}
       and plantId = #{plantid,jdbcType=INTEGER}
   </select>
-  <select id="findSumById" resultType="com.sk.gz.model.power.PowerIndicators">
+  <select id="findPowerIndicators" resultType="com.sk.gz.model.power.PowerIndicators">
     SELECT
       b.name AS name,
       sum(a.actualPower) as actualPower,
@@ -98,10 +98,84 @@
       a.plantId = b.id
     GROUP BY a.plantId
   </select>
+  <select id="findStationIndicators" resultType="com.sk.gz.model.power.StationIndicators">
+    SELECT
+      b.name AS name,
+      b.id AS id,
+      sum( a.validDays ) AS dataValidDays,
+      b.powerRating AS powerRating,
+      sum( a.actualPower ) AS power,
+      CONVERT (
+              ( sum( a.academicPower ) - sum( a.actualPower ) ) / sum( a.academicPower ),
+              DECIMAL ( 10, 2 )
+      ) AS reductionFactor,
+      CONVERT (
+              ( sum( a.actualPower ) / b.powerRating ) / ( sum( a.validDays ) * 24 ),
+              DECIMAL ( 10, 2 )
+      ) AS capacityFactor,
+      CONVERT ( sum( a.actualPower ) / sum( a.validDays ), DECIMAL ( 10, 2 ) ) AS dailyAveragePower,
+      avg( a.avgWindSpeed ) AS averageWindSpeed,
+      CONVERT (
+              ( sum( a.validDays ) * 24 * 3600- sum( a.downtime ) ) / ( sum( a.validDays ) * 24 * 3600 ),
+              DECIMAL ( 10, 2 )
+      ) AS tba,
+      CONVERT ( sum( a.actualPower ) / sum( a.academicPower ), DECIMAL ( 10, 2 ) ) AS pba
+    FROM
+      quota_month a,
+      plant b
+    WHERE
+      a.plantId = b.id
+    GROUP BY
+      a.plantId,
+      b.name
+  </select>
+  <select id="findStationMonthPower" resultType="com.sk.gz.model.power.MonthStationPower">
+    SELECT
+      date AS time,
+      sum( actualPower ) AS power,
+      sum( academicPower ) - sum( actualPower ) AS reduction
+    FROM
+      quota_month
+    GROUP BY
+      date
+  </select>
+  <select id="findStationPreview" resultType="com.sk.gz.model.power.StationPreview">
+    SELECT
+      s.name AS name,
+      sum( a.validDays ) AS dataValidDays,
+      min( a.date ) as startTime,
+      now() as endTime,
+      sum( a.actualPower ) AS power,
+      sum( a.academicPower ) - sum( a.actualPower ) AS reduction,
+      CONVERT (
+              ( sum( a.academicPower ) - sum( a.actualPower ) ) / sum( a.academicPower ),
+              DECIMAL ( 10, 2 )
+      ) AS reductionRatio,
+      avg( a.avgWindSpeed ) AS averageWindSpeed,
+      CONVERT (
+              ( sum( a.validDays ) * 24 * 3600- sum( a.downtime ) ) / ( sum( a.validDays ) * 24 * 3600 ),
+              DECIMAL ( 10, 2 )
+      ) AS tba,
+      CONVERT ( sum( a.actualPower ) / sum( a.academicPower ), DECIMAL ( 10, 2 ) ) AS pba
+    FROM
+      quota_month a,
+      plant b,
+      station s
+    WHERE
+      a.plantId = b.id
+      and b.stationId = s.id
+    GROUP BY
+      s.id
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="com.sk.gz.entity.QuotaMonthKey">
     delete from quota_month
     where `date` = #{date,jdbcType=TIMESTAMP}
       and plantId = #{plantid,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteMonthStatistic">
+    delete from quota_month
+    where
+      `date` = #{monthBegin,jdbcType=TIMESTAMP}
   </delete>
   <insert id="insert" parameterType="com.sk.gz.entity.QuotaMonth">
     insert into quota_month (`date`, plantId, academicPower, 

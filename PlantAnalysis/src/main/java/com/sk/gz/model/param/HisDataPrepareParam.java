@@ -23,4 +23,10 @@ public class HisDataPrepareParam {
 
     @JsonProperty("hisFlag")
     private boolean his;
+
+    @JsonProperty("pathPrefix")
+    private String pathPrefix;
+
+    @JsonProperty("idBase")
+    private int idBase;
 }
