@@ -99,6 +99,7 @@ public class ScheduledServiceImpl implements ScheduledService {
 
                 File file = new File(filePath + fileName);
                 if(!file.exists()) {
+                    log.info("file " + filePath + fileName + " not exist.");
                     continue;
                 }
 
@@ -114,7 +115,6 @@ public class ScheduledServiceImpl implements ScheduledService {
 
                 //#4 update power curve.
                 List<CurvePoint> curve = getPowerCurve(plantId,"ambWindSpeed","griPower", 0.5f);
-
 
                 //# calculate power for plant
                 Date startUpdateDate = DateUtil.dateAddDays(pre, -1, false);
@@ -135,7 +135,7 @@ public class ScheduledServiceImpl implements ScheduledService {
     private void pretreatment(int plantId, List<PlantDataInitial> sourceData) {
         // 【重要前提】：功率曲线已经存在
         List<CurvePoint> curvePoints = powerCurvePointsDAO.findByPlantIdAndTypeAndWindASC(
-                30210,
+                plantId,
                 CurvePointType.FFIT_CURVE.getValue());
 
         sourceDataCache.initCache();
@@ -164,8 +164,6 @@ public class ScheduledServiceImpl implements ScheduledService {
     private List<CurvePoint> getPowerCurve(int plantId, String xColumn, String yColumn, float scale) {
         List<CurvePoint> curvePoints = new ArrayList<>();
 
-        powerCurvePointsDAO.deleteByType(plantId, CurvePointType.FFIT_CURVE.getValue());
-
         float maxValue = plantDataPretreatmentDAO.findMaxByColumn(xColumn, plantId);
         float rangeMin = 0;
         float rangeMax = maxValue;
@@ -186,7 +184,10 @@ public class ScheduledServiceImpl implements ScheduledService {
         }
 
         //# save to database
-        powerCurvePointsDAO.batchInsert(plantId, curvePoints, CurvePointType.FFIT_CURVE.getValue());
+        if (curvePoints.size() > 0) {
+            powerCurvePointsDAO.deleteByType(plantId, CurvePointType.FFIT_CURVE.getValue());
+            powerCurvePointsDAO.batchInsert(plantId, curvePoints, CurvePointType.FFIT_CURVE.getValue());
+        }
 
         log.info("get curve ok, plant # " + plantId);
         return curvePoints;

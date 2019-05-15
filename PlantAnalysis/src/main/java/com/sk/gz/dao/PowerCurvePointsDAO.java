@@ -12,7 +12,7 @@ import java.util.List;
  */
 @Repository
 public interface PowerCurvePointsDAO extends MyBatisBaseDao<PowerCurvePoints, Integer> {
-    int batchInsert(@Param("plantId") int plantId, @Param("list")List<CurvePoint> points, @Param("type") int type);
+    int batchInsert(@Param("plantId") int plantId, @Param("list")List<CurvePoint> points, @Param("typeV") int type);
 
     int deleteByType(@Param("plantId") int plantId, @Param("type") int type);
 

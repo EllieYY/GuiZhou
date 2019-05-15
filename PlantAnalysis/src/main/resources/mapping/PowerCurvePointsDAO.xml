@@ -80,24 +80,20 @@
       </if>
     </trim>
   </insert>
-    <insert id="batchInsert">
-        <selectKey resultType="INTEGER" order="AFTER" keyProperty="id">
-            SELECT LAST_INSERT_ID() AS id
-        </selectKey>
-        insert into power_curve_points (plantId, windSpeed,
-        `power`, `type`)
-        values
-        <foreach collection="list" item="item" separator=",">
-            (
-            #{plantId,jdbcType=INTEGER},
-            #{item.windSpeed,jdbcType=REAL},
-            #{item.power,jdbcType=REAL},
-            #{type,jdbcType=BIT}
-            )
-        </foreach>
-
-    </insert>
-    <update id="updateByPrimaryKeySelective" parameterType="com.sk.gz.entity.PowerCurvePoints">
+  <insert id="batchInsert">
+    insert into power_curve_points (plantId, windSpeed,
+    `power`, `type`)
+    values
+    <foreach collection="list" item="item" separator=",">
+      (
+        #{plantId,jdbcType=INTEGER},
+        #{item.windSpeed,jdbcType=REAL},
+        #{item.power,jdbcType=REAL},
+        #{typeV,jdbcType=BIT}
+      )
+    </foreach>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sk.gz.entity.PowerCurvePoints">
     update power_curve_points
     <set>
       <if test="plantid != null">

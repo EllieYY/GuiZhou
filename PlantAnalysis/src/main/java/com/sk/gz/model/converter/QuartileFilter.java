@@ -86,19 +86,19 @@ public class QuartileFilter {
             filterResults.add(new FilterResult());
         }
 
-        //# print result to excel
-        try {
-            toExcel(plantId, filterResults);
-        } catch (IOException e) {
-            log.info("fail to save to excel");
-        }
+//        //# print result to excel
+//        try {
+//            toExcel(plantId, filterResults);
+//        } catch (IOException e) {
+//            log.info("fail to save to excel");
+//        }
     }
 
 
     private FilterResult getQuartile(List<Float> data, int rangeValidFlag) {
         int size = data.size();
         if (size < 4) {
-            log.info("negligible data size: " + size);
+//            log.info("negligible data size: " + size);
             return null;
         }
 
