@@ -6,10 +6,9 @@
     <result column="plantId" jdbcType="INTEGER" property="plantid" />
     <result column="windSpeed" jdbcType="REAL" property="windspeed" />
     <result column="power" jdbcType="REAL" property="power" />
-    <result column="type" jdbcType="BIT" property="type" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, plantId, windSpeed, `power`, `type`
+    id, plantId, windSpeed, `power`
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -17,31 +16,29 @@
     from power_curve_points
     where id = #{id,jdbcType=INTEGER}
   </select>
-  <select id="findByPlantIdAndTypeAndWindASC" resultType="com.sk.gz.model.curve.CurvePoint">
+  <select id="findByPlantIdAndWindASC" resultType="com.sk.gz.model.curve.CurvePoint">
     select
       windSpeed as "windSpeed",
       power as "power"
     from power_curve_points
     where
       plantId = #{plantId,jdbcType=INTEGER}
-      and type = #{type,jdbcType=INTEGER}
     order by windSpeed ASC
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from power_curve_points
     where id = #{id,jdbcType=INTEGER}
   </delete>
-    <delete id="deleteByType">
+    <delete id="deleteByPlantId">
       delete from power_curve_points
       where
-        type = #{type,jdbcType=BIT}
-        and plantId = #{plantId,jdbcType=INTEGER}
+        plantId = #{plantId,jdbcType=INTEGER}
     </delete>
     <insert id="insert" parameterType="com.sk.gz.entity.PowerCurvePoints">
     insert into power_curve_points (id, plantId, windSpeed, 
-      `power`, `type`)
+      `power`)
     values (#{id,jdbcType=INTEGER}, #{plantid,jdbcType=INTEGER}, #{windspeed,jdbcType=REAL}, 
-      #{power,jdbcType=REAL}, #{type,jdbcType=BIT})
+      #{power,jdbcType=REAL})
   </insert>
   <insert id="insertSelective" parameterType="com.sk.gz.entity.PowerCurvePoints">
     insert into power_curve_points
@@ -58,9 +55,6 @@
       <if test="power != null">
         `power`,
       </if>
-      <if test="type != null">
-        `type`,
-      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -75,9 +69,6 @@
       <if test="power != null">
         #{power,jdbcType=REAL},
       </if>
-      <if test="type != null">
-        #{type,jdbcType=BIT},
-      </if>
     </trim>
   </insert>
     <insert id="batchInsert">
@@ -85,14 +76,13 @@
             SELECT LAST_INSERT_ID() AS id
         </selectKey>
         insert into power_curve_points (plantId, windSpeed,
-        `power`, `type`)
+        `power`)
         values
         <foreach collection="list" item="item" separator=",">
             (
             #{plantId,jdbcType=INTEGER},
             #{item.windSpeed,jdbcType=REAL},
-            #{item.power,jdbcType=REAL},
-            #{type,jdbcType=BIT}
+            #{item.power,jdbcType=REAL}
             )
         </foreach>
 
@@ -109,9 +99,6 @@
       <if test="power != null">
         `power` = #{power,jdbcType=REAL},
       </if>
-      <if test="type != null">
-        `type` = #{type,jdbcType=BIT},
-      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -119,8 +106,7 @@
     update power_curve_points
     set plantId = #{plantid,jdbcType=INTEGER},
       windSpeed = #{windspeed,jdbcType=REAL},
-      `power` = #{power,jdbcType=REAL},
-      `type` = #{type,jdbcType=BIT}
+      `power` = #{power,jdbcType=REAL}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

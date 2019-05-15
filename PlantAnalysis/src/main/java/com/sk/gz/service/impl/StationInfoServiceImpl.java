@@ -4,9 +4,9 @@ import com.sk.gz.aop.excption.ServiceException;
 import com.sk.gz.dao.PlantDAO;
 import com.sk.gz.dao.PlantDataPretreatmentDAO;
 import com.sk.gz.dao.PowerCurvePointsDAO;
+import com.sk.gz.dao.PracticalPowerCurveDAO;
 import com.sk.gz.dao.QuotaMonthDAO;
 import com.sk.gz.entity.Plant;
-import com.sk.gz.model.converter.CurvePointType;
 import com.sk.gz.model.converter.DataTypeParam;
 import com.sk.gz.model.curve.CrossAnalysisResult;
 import com.sk.gz.model.curve.PlantPowerCurve;
@@ -36,6 +36,8 @@ import java.util.Random;
 public class StationInfoServiceImpl implements StationInfoService {
     @Resource
     private PowerCurvePointsDAO powerCurvePointsDAO;
+    @Resource
+    private PracticalPowerCurveDAO practicalPowerCurveDAO;
     @Resource
     private QuotaMonthDAO quotaMonthDAO;
     @Resource
@@ -116,10 +118,9 @@ public class StationInfoServiceImpl implements StationInfoService {
     public StationPowerCurve getPowerCurveById(int id) {
         StationPowerCurve result = new StationPowerCurve();
         // 功率曲线
-        result.setPracticalCurve(powerCurvePointsDAO.findByPlantIdAndTypeAndWindASC(
-                        id, CurvePointType.FFIT_CURVE.getValue()));
-        result.setReferenceCurve(powerCurvePointsDAO.findByPlantIdAndTypeAndWindASC(
-                id, CurvePointType.THEO_CURVE.getValue()));
+        int plantType = plantDAO.findTypeByPlantId(id);
+        result.setPracticalCurve(practicalPowerCurveDAO.findByTypeAndWindASC(plantType));
+        result.setReferenceCurve(powerCurvePointsDAO.findByPlantIdAndWindASC(id));
 
         // 原始数据
         result.setSourcePoints(plantDataPretreatmentDAO.findSourceData(id));

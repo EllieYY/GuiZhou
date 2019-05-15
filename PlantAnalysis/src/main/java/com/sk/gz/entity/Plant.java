@@ -37,6 +37,8 @@ public class Plant implements Serializable {
      */
     private Float cutoffwindspeed;
 
+    private Integer planttype;
+
     private static final long serialVersionUID = 1L;
 
     public Integer getId() {
@@ -87,6 +89,14 @@ public class Plant implements Serializable {
         this.cutoffwindspeed = cutoffwindspeed;
     }
 
+    public Integer getPlanttype() {
+        return planttype;
+    }
+
+    public void setPlanttype(Integer planttype) {
+        this.planttype = planttype;
+    }
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {
@@ -104,7 +114,8 @@ public class Plant implements Serializable {
             && (this.getStationid() == null ? other.getStationid() == null : this.getStationid().equals(other.getStationid()))
             && (this.getPowerrating() == null ? other.getPowerrating() == null : this.getPowerrating().equals(other.getPowerrating()))
             && (this.getCutinwindspeed() == null ? other.getCutinwindspeed() == null : this.getCutinwindspeed().equals(other.getCutinwindspeed()))
-            && (this.getCutoffwindspeed() == null ? other.getCutoffwindspeed() == null : this.getCutoffwindspeed().equals(other.getCutoffwindspeed()));
+            && (this.getCutoffwindspeed() == null ? other.getCutoffwindspeed() == null : this.getCutoffwindspeed().equals(other.getCutoffwindspeed()))
+            && (this.getPlanttype() == null ? other.getPlanttype() == null : this.getPlanttype().equals(other.getPlanttype()));
     }
 
     @Override
@@ -117,6 +128,7 @@ public class Plant implements Serializable {
         result = prime * result + ((getPowerrating() == null) ? 0 : getPowerrating().hashCode());
         result = prime * result + ((getCutinwindspeed() == null) ? 0 : getCutinwindspeed().hashCode());
         result = prime * result + ((getCutoffwindspeed() == null) ? 0 : getCutoffwindspeed().hashCode());
+        result = prime * result + ((getPlanttype() == null) ? 0 : getPlanttype().hashCode());
         return result;
     }
 
@@ -132,17 +144,9 @@ public class Plant implements Serializable {
         sb.append(", powerrating=").append(powerrating);
         sb.append(", cutinwindspeed=").append(cutinwindspeed);
         sb.append(", cutoffwindspeed=").append(cutoffwindspeed);
+        sb.append(", planttype=").append(planttype);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
-    }
-
-    public Plant(Integer id, String name, Integer stationid, Float powerrating, Float cutinwindspeed, Float cutoffwindspeed) {
-        this.id = id;
-        this.name = name;
-        this.stationid = stationid;
-        this.powerrating = powerrating;
-        this.cutinwindspeed = cutinwindspeed;
-        this.cutoffwindspeed = cutoffwindspeed;
     }
 }

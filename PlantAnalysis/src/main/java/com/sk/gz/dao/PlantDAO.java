@@ -2,6 +2,7 @@ package com.sk.gz.dao;
 
 import com.sk.gz.entity.Plant;
 import com.sk.gz.model.param.PlantLabel;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,4 +13,5 @@ import java.util.List;
 @Repository
 public interface PlantDAO extends MyBatisBaseDao<Plant, Integer> {
     List<PlantLabel> findAllIndexInfo();
+    int findTypeByPlantId(@Param("plantId") int plantId);
 }

@@ -1,13 +1,13 @@
 package com.sk.gz.service.impl;
 
 import com.sk.gz.aop.ResultBeanExceptionHandler;
+import com.sk.gz.dao.MyBatisBaseDao;
 import com.sk.gz.dao.PlantDAO;
 import com.sk.gz.dao.PlantDataPretreatmentDAO;
 import com.sk.gz.dao.PowerCurvePointsDAO;
+import com.sk.gz.dao.PracticalPowerCurveDAO;
 import com.sk.gz.dao.QuotaMonthDAO;
 import com.sk.gz.entity.PlantDataInitial;
-import com.sk.gz.entity.PowerCurvePoints;
-import com.sk.gz.model.converter.CurvePointType;
 import com.sk.gz.model.converter.DataState;
 import com.sk.gz.model.converter.FilterParam;
 import com.sk.gz.model.converter.MonthQuotaParam;
@@ -21,13 +21,11 @@ import com.sk.gz.utils.CsvUtil;
 import com.sk.gz.utils.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.annotation.Resources;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,6 +52,8 @@ public class ScheduledServiceImpl implements ScheduledService {
     private PlantDataPretreatmentDAO plantDataPretreatmentDAO;
     @Resource
     private PowerCurvePointsDAO powerCurvePointsDAO;
+    @Resource
+    private PracticalPowerCurveDAO practicalPowerCurveDAO;
     @Resource
     private PlantDAO plantDAO;
     @Resource
@@ -99,6 +99,7 @@ public class ScheduledServiceImpl implements ScheduledService {
 
                 File file = new File(filePath + fileName);
                 if(!file.exists()) {
+                    log.info("file " + filePath + fileName + " not exist.");
                     continue;
                 }
 
@@ -107,14 +108,13 @@ public class ScheduledServiceImpl implements ScheduledService {
                 log.info("plant#" + filePath + fileName + ", data size = " + sourceData.size());
 
                 //#2 data verify: to 10mins data
-                pretreatment(plantId, sourceData);
+                pretreatment(plantId, sourceData, isHis);
 
                 //#3 filter
                 filter(plantId);
 
                 //#4 update power curve.
                 List<CurvePoint> curve = getPowerCurve(plantId,"ambWindSpeed","griPower", 0.5f);
-
 
                 //# calculate power for plant
                 Date startUpdateDate = DateUtil.dateAddDays(pre, -1, false);
@@ -132,11 +132,15 @@ public class ScheduledServiceImpl implements ScheduledService {
     }
 
     /** 预处理 */
-    private void pretreatment(int plantId, List<PlantDataInitial> sourceData) {
-        // 【重要前提】：功率曲线已经存在
-        List<CurvePoint> curvePoints = powerCurvePointsDAO.findByPlantIdAndTypeAndWindASC(
-                30210,
-                CurvePointType.FFIT_CURVE.getValue());
+    private void pretreatment(int plantId, List<PlantDataInitial> sourceData, boolean isHis) {
+        // 【重要前提】：功率曲线已经存在，历史数据使用理论功率曲线
+        List<CurvePoint> curvePoints = new ArrayList<>();
+        if (isHis) {
+            int plantType = plantDAO.findTypeByPlantId(plantId);
+            curvePoints = practicalPowerCurveDAO.findByTypeAndWindASC(plantType);
+        } else {
+            curvePoints = powerCurvePointsDAO.findByPlantIdAndWindASC(plantId);
+        }
 
         sourceDataCache.initCache();
         int size = sourceData.size();
@@ -164,8 +168,6 @@ public class ScheduledServiceImpl implements ScheduledService {
     private List<CurvePoint> getPowerCurve(int plantId, String xColumn, String yColumn, float scale) {
         List<CurvePoint> curvePoints = new ArrayList<>();
 
-        powerCurvePointsDAO.deleteByType(plantId, CurvePointType.FFIT_CURVE.getValue());
-
         float maxValue = plantDataPretreatmentDAO.findMaxByColumn(xColumn, plantId);
         float rangeMin = 0;
         float rangeMax = maxValue;
@@ -186,7 +188,10 @@ public class ScheduledServiceImpl implements ScheduledService {
         }
 
         //# save to database
-        powerCurvePointsDAO.batchInsert(plantId, curvePoints, CurvePointType.FFIT_CURVE.getValue());
+        if (curvePoints.size() > 0) {
+            powerCurvePointsDAO.deleteByPlantId(plantId);
+            powerCurvePointsDAO.batchInsert(plantId, curvePoints);
+        }
 
         log.info("get curve ok, plant # " + plantId);
         return curvePoints;
