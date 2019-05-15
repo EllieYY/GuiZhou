@@ -71,7 +71,7 @@
       </if>
     </trim>
   </insert>
-    <insert id="batchInsert">
+  <insert id="batchInsert">
         <selectKey resultType="INTEGER" order="AFTER" keyProperty="id">
             SELECT LAST_INSERT_ID() AS id
         </selectKey>
@@ -85,9 +85,8 @@
             #{item.power,jdbcType=REAL}
             )
         </foreach>
-
     </insert>
-    <update id="updateByPrimaryKeySelective" parameterType="com.sk.gz.entity.PowerCurvePoints">
+  <update id="updateByPrimaryKeySelective" parameterType="com.sk.gz.entity.PowerCurvePoints">
     update power_curve_points
     <set>
       <if test="plantid != null">

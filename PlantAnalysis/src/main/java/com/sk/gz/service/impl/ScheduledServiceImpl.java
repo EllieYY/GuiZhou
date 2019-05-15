@@ -191,6 +191,7 @@ public class ScheduledServiceImpl implements ScheduledService {
         if (curvePoints.size() > 0) {
             powerCurvePointsDAO.deleteByPlantId(plantId);
             powerCurvePointsDAO.batchInsert(plantId, curvePoints);
+
         }
 
         log.info("get curve ok, plant # " + plantId);
