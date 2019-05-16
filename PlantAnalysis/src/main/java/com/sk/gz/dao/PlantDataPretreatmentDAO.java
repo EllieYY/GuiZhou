@@ -24,6 +24,7 @@ public interface PlantDataPretreatmentDAO extends MyBatisBaseDao<PlantDataPretre
     int batchInsert(List<PlantDataPretreatment> data);
 
     float findMaxByColumn(@Param("column") String column, @Param("plantId") int plantId);
+    float findMinByColumn(@Param("column") String column, @Param("plantId") int plantId);
 
     List<Float> findByColumnAndRange(RangeParam param);
 

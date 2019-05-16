@@ -141,9 +141,12 @@ public class StationInfoServiceImpl implements StationInfoService {
         CrossAnalysisResult result = new CrossAnalysisResult();
         result.setPoints(plantDataPretreatmentDAO.findSourceDataByColumn(plantId, xColumn, yColumn));
 
+        int scaleNum = param.getDensityNum() - 1;
+        scaleNum = scaleNum < 1 ? 1 : scaleNum;
         float xMax = plantDataPretreatmentDAO.findMaxByColumn(xColumn, plantId);
-        double scale = xMax / param.getDensityNum();
-        scale = Math.ceil(scale);
+        float xMin = plantDataPretreatmentDAO.findMinByColumn(xColumn, plantId);
+        double scale = (xMax - xMin) / scaleNum;
+//        scale = Math.ceil(scale);
         result.setDensity(plantDataPretreatmentDAO.findHistogramByColumn(plantId, xColumn, scale));
 
         return result;

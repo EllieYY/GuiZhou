@@ -250,12 +250,12 @@
   </select>
   <select id="findStateStatisticsByPlantId" resultType="com.sk.gz.model.curve.StateStatistics">
     SELECT
-      CONVERT ( SUM( IF ( state = #{dataType.stopState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS downtime,
-      CONVERT ( SUM( IF ( state = #{dataType.limitState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS `limit`,
-      CONVERT ( SUM( IF ( state = #{dataType.underState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS arrears,
-      CONVERT ( SUM( IF ( state = #{dataType.overState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS extra,
-      CONVERT ( SUM( IF ( state = #{dataType.normalState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS normal,
-      CONVERT ( SUM( IF ( state = #{dataType.invalidState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 2 ) ) AS invalid
+      CONVERT ( SUM( IF ( state = #{dataType.stopState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 3 ) ) AS downtime,
+      CONVERT ( SUM( IF ( state = #{dataType.limitState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 3 ) ) AS `limit`,
+      CONVERT ( SUM( IF ( state = #{dataType.underState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 3 ) ) AS arrears,
+      CONVERT ( SUM( IF ( state = #{dataType.overState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 3 ) ) AS extra,
+      CONVERT ( SUM( IF ( state = #{dataType.normalState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 3 ) ) AS normal,
+      CONVERT ( SUM( IF ( state = #{dataType.invalidState}, 1, 0 ) ) / COUNT( * ), DECIMAL ( 10, 3 ) ) AS invalid
     FROM
       plant_data_pretreatment
     WHERE
@@ -287,7 +287,7 @@
       count( * ) AS value
     FROM (
       SELECT
-        floor( ${xColumn} / #{scaleV} ) AS scaleR
+        ceil( ${xColumn} / #{scaleV} ) AS scaleR
       FROM plant_data_pretreatment
       WHERE plantId = #{plantId,jdbcType=INTEGER}
       ) d
@@ -312,7 +312,11 @@
     GROUP BY
       d.scaleR
   </select>
-
+  <select id="findMinByColumn" resultType="java.lang.Float">
+    SELECT min(${column})
+    FROM plant_data_pretreatment
+    WHERE plantId = #{plantId,jdbcType=INTEGER}
+  </select>
   <update id="updateStateByRange" parameterType="com.sk.gz.model.converter.RangeParam">
     update plant_data_pretreatment
     set `state` = (

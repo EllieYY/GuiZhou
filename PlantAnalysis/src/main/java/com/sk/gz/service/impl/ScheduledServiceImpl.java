@@ -61,7 +61,7 @@ public class ScheduledServiceImpl implements ScheduledService {
 
 
     /** 定时任务，每天执行一次 */
-    @Scheduled(cron = "0 0 0 * * ?")
+//    @Scheduled(cron = "0 0 0 * * ?")
     @Override
     public void scheduleTask() {
         Date today = new Date();
