@@ -4,7 +4,7 @@ import com.sk.gz.aop.excption.ServiceException;
 import com.sk.gz.dao.PlantDAO;
 import com.sk.gz.dao.PlantDataPretreatmentDAO;
 import com.sk.gz.dao.PowerCurvePointsDAO;
-import com.sk.gz.dao.PracticalPowerCurveDAO;
+import com.sk.gz.dao.DesignPowerCurveDAO;
 import com.sk.gz.dao.QuotaMonthDAO;
 import com.sk.gz.entity.Plant;
 import com.sk.gz.model.converter.DataTypeParam;
@@ -18,14 +18,11 @@ import com.sk.gz.model.power.MonthStationPower;
 import com.sk.gz.model.power.StationIndicators;
 import com.sk.gz.model.power.StationPreview;
 import com.sk.gz.service.StationInfoService;
-import com.sk.gz.utils.DateUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 /**
  * @Description :
@@ -37,7 +34,7 @@ public class StationInfoServiceImpl implements StationInfoService {
     @Resource
     private PowerCurvePointsDAO powerCurvePointsDAO;
     @Resource
-    private PracticalPowerCurveDAO practicalPowerCurveDAO;
+    private DesignPowerCurveDAO designPowerCurveDAO;
     @Resource
     private QuotaMonthDAO quotaMonthDAO;
     @Resource
@@ -118,9 +115,10 @@ public class StationInfoServiceImpl implements StationInfoService {
     public StationPowerCurve getPowerCurveById(int id) {
         StationPowerCurve result = new StationPowerCurve();
         // 功率曲线
+        result.setPracticalCurve(powerCurvePointsDAO.findByPlantIdAndWindASC(id));
+        
         int plantType = plantDAO.findTypeByPlantId(id);
-        result.setPracticalCurve(practicalPowerCurveDAO.findByTypeAndWindASC(plantType));
-        result.setReferenceCurve(powerCurvePointsDAO.findByPlantIdAndWindASC(id));
+        result.setReferenceCurve(designPowerCurveDAO.findByTypeAndWindASC(plantType));
 
         // 原始数据
         result.setSourcePoints(plantDataPretreatmentDAO.findSourceData(id));

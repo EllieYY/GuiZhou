@@ -11,6 +11,6 @@ import java.util.List;
  * PracticalPowerCurveDAO继承基类
  */
 @Repository
-public interface PracticalPowerCurveDAO extends MyBatisBaseDao<PracticalPowerCurve, Integer> {
+public interface DesignPowerCurveDAO extends MyBatisBaseDao<PracticalPowerCurve, Integer> {
     List<CurvePoint> findByTypeAndWindASC(@Param("plantType") int type);
 }

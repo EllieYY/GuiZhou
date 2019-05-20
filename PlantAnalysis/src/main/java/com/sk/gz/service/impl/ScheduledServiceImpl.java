@@ -1,11 +1,10 @@
 package com.sk.gz.service.impl;
 
 import com.sk.gz.aop.ResultBeanExceptionHandler;
-import com.sk.gz.dao.MyBatisBaseDao;
 import com.sk.gz.dao.PlantDAO;
 import com.sk.gz.dao.PlantDataPretreatmentDAO;
 import com.sk.gz.dao.PowerCurvePointsDAO;
-import com.sk.gz.dao.PracticalPowerCurveDAO;
+import com.sk.gz.dao.DesignPowerCurveDAO;
 import com.sk.gz.dao.QuotaMonthDAO;
 import com.sk.gz.entity.PlantDataInitial;
 import com.sk.gz.model.converter.DataState;
@@ -22,7 +21,6 @@ import com.sk.gz.utils.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -53,7 +51,7 @@ public class ScheduledServiceImpl implements ScheduledService {
     @Resource
     private PowerCurvePointsDAO powerCurvePointsDAO;
     @Resource
-    private PracticalPowerCurveDAO practicalPowerCurveDAO;
+    private DesignPowerCurveDAO designPowerCurveDAO;
     @Resource
     private PlantDAO plantDAO;
     @Resource
@@ -137,7 +135,7 @@ public class ScheduledServiceImpl implements ScheduledService {
         List<CurvePoint> curvePoints = new ArrayList<>();
         if (isHis) {
             int plantType = plantDAO.findTypeByPlantId(plantId);
-            curvePoints = practicalPowerCurveDAO.findByTypeAndWindASC(plantType);
+            curvePoints = designPowerCurveDAO.findByTypeAndWindASC(plantType);
         } else {
             curvePoints = powerCurvePointsDAO.findByPlantIdAndWindASC(plantId);
         }
