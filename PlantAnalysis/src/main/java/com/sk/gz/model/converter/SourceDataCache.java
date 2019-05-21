@@ -36,32 +36,25 @@ public class SourceDataCache {
             return 1;
         }
 
+        //# check state change
+        int state = data.getState();
+        if (state != cacheState) {
+            stateChanged = true;
+        }
+
         //# check time length or month changed.
         Date datatime = data.getDatatime();
-
         Date monthBegin = DateUtil.getFirstDateOfMonth(datatime);
-        if ((datatime.getTime() - cacheStartTime.getTime()) >= limit ||
+        if (stateChanged ||
+                (datatime.getTime() - cacheStartTime.getTime()) >= limit ||
                 monthBegin.getTime() != cacheMonthBegin.getTime()) {
             preData = preprocess(curvePoints);
             initCache(data);
             return 0;
         }
 
-        //# if state change, discard rest data in this limit length.
-        int state = data.getState();
-        boolean isStateDefine = false;
-        for (PowerState s : PowerState.values()) {
-            if (state == s.getValue()) {
-                isStateDefine = true;
-            }
-        }
-
-        if (isStateDefine && (!stateChanged) && state == cacheState) {
-            cache.add(data);
-            cacheEndTime = datatime;
-        } else {
-            stateChanged = true;
-        }
+        cache.add(data);
+        cacheEndTime = datatime;
 
         if (dataEnd) {
             preData = preprocess(curvePoints);
@@ -114,11 +107,10 @@ public class SourceDataCache {
         //# 发电状态
         preData.setPowerstate(cacheState);
 
-
         //# 数据状态 - 预处理
         int state = getState(cacheState);
         preData.setState(state);
-        
+
         //# 累计发电量
         double totalPower = cache.get(0).getTotalpower();
         preData.setTotalpower(totalPower);

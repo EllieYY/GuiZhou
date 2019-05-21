@@ -37,4 +37,13 @@ public enum PowerState {
         }
         return null;
     }
+
+    public static boolean isPowerState(int value){
+        for (PowerState s : PowerState.values()) {
+            if (value == s.getValue()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

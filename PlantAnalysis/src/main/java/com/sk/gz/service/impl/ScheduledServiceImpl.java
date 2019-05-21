@@ -147,6 +147,11 @@ public class ScheduledServiceImpl implements ScheduledService {
             boolean isDataEnd = ((i+1) == size);
 
             PlantDataInitial data = sourceData.get(i);
+            boolean isStateDefine = PowerState.isPowerState(data.getState());
+            if (!isStateDefine) {
+                continue;
+            }
+
             if (data.getTotalpower() <= 0) {
                 data.setState(PowerState.OFF_LINE.getValue());
             }
