@@ -28,4 +28,13 @@ public enum PowerState {
     PowerState(int num) {
         this.num = num;
     }
+
+    public static PowerState getTypeByValue(int value){
+        for (PowerState enums : PowerState.values()) {
+            if (enums.getValue() == value) {
+                return enums;
+            }
+        }
+        return null;
+    }
 }

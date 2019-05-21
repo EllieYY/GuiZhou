@@ -10,6 +10,7 @@ import com.sk.gz.entity.PlantDataInitial;
 import com.sk.gz.model.converter.DataState;
 import com.sk.gz.model.converter.FilterParam;
 import com.sk.gz.model.converter.MonthQuotaParam;
+import com.sk.gz.model.converter.PowerState;
 import com.sk.gz.model.converter.QuartileFilter;
 import com.sk.gz.model.converter.RangeParam;
 import com.sk.gz.model.converter.SourceDataCache;
@@ -146,6 +147,10 @@ public class ScheduledServiceImpl implements ScheduledService {
             boolean isDataEnd = ((i+1) == size);
 
             PlantDataInitial data = sourceData.get(i);
+            if (data.getTotalpower() <= 0) {
+                data.setState(PowerState.OFF_LINE.getValue());
+            }
+
             if (sourceDataCache.addData(data, PREPROCESS_DATA_LENGTH, curvePoints, isDataEnd) == 0) {
                 pretreatmentDataCache.add(sourceDataCache.getPreData(), isDataEnd);
             }

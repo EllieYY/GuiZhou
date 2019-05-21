@@ -115,17 +115,10 @@ public class SourceDataCache {
         preData.setPowerstate(cacheState);
 
 
-        //# 数据状态 - 预处理：
-        // 发电状态为故障、检修、停机时，数据状态均标记为停机
-        // 发电状态为离线时，数据状态均标记为无效
-        boolean isStopPowerState = (
-                cacheState == PowerState.ERR.getValue() ||
-                cacheState == PowerState.FIX.getValue() ||
-                cacheState == PowerState.STOP.getValue());
-        boolean isInvalid = (cacheState == PowerState.OFF_LINE.getValue());
-        preData.setState(isInvalid ? DataState.INVALID.getValue() :
-                (isStopPowerState ? DataState.STOP.getValue() : DataState.NORMAL.getValue()));
-
+        //# 数据状态 - 预处理
+        int state = getState(cacheState);
+        preData.setState(state);
+        
         //# 累计发电量
         double totalPower = cache.get(0).getTotalpower();
         preData.setTotalpower(totalPower);
@@ -157,7 +150,7 @@ public class SourceDataCache {
         return preData;
     }
 
-    // 根据功率曲线
+    /** 根据功率曲线 */
     private float calculateEstimatepower(float wind, List<CurvePoint> curvePoints, long msesc) {
         float power = 0;
         if (curvePoints.size() < 2) {
@@ -187,5 +180,38 @@ public class SourceDataCache {
         }
 
         return power * msesc * MS_TO_HOUR;
+    }
+
+    /**
+     * 发电状态 = {故障、检修、停机}，数据状态 = {停机}
+     * 发电状态 = {离线}，数据状态 = {无效}
+     * 发电状态 = {发电}，数据状态 = {正常}
+     * 发电状态 = else，数据状态 = {欠发}
+     */
+    private int getState(int powerState) {
+        int state = DataState.UNDER.getValue();
+
+        PowerState pState = PowerState.getTypeByValue(powerState);
+        switch (pState) {
+            case OFF_LINE:
+                state = DataState.INVALID.getValue();
+                break;
+
+            case GEN:
+                state = DataState.NORMAL.getValue();
+                break;
+
+            case ERR:
+            case FIX:
+            case STOP:
+                state = DataState.STOP.getValue();
+                break;
+
+            default:
+                DataState.UNDER.getValue();
+                break;
+        }
+
+        return state;
     }
 }

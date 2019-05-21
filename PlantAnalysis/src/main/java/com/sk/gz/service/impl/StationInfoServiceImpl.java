@@ -116,7 +116,7 @@ public class StationInfoServiceImpl implements StationInfoService {
         StationPowerCurve result = new StationPowerCurve();
         // 功率曲线
         result.setPracticalCurve(powerCurvePointsDAO.findByPlantIdAndWindASC(id));
-        
+
         int plantType = plantDAO.findTypeByPlantId(id);
         result.setReferenceCurve(designPowerCurveDAO.findByTypeAndWindASC(plantType));
 
