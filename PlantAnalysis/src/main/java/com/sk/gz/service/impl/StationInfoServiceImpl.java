@@ -7,6 +7,7 @@ import com.sk.gz.dao.PowerCurvePointsDAO;
 import com.sk.gz.dao.DesignPowerCurveDAO;
 import com.sk.gz.dao.QuotaMonthDAO;
 import com.sk.gz.entity.Plant;
+import com.sk.gz.model.converter.DataState;
 import com.sk.gz.model.converter.DataTypeParam;
 import com.sk.gz.model.curve.CrossAnalysisResult;
 import com.sk.gz.model.curve.PlantPowerCurve;
@@ -145,7 +146,8 @@ public class StationInfoServiceImpl implements StationInfoService {
         float xMin = plantDataPretreatmentDAO.findMinByColumn(xColumn, plantId);
         double scale = (xMax - xMin) / scaleNum;
 //        scale = Math.ceil(scale);
-        result.setDensity(plantDataPretreatmentDAO.findHistogramByColumn(plantId, xColumn, scale));
+        result.setDensity(plantDataPretreatmentDAO.findHistogramByColumn(plantId, xColumn, scale,
+                DataState.NORMAL.getValue()));
 
         return result;
     }
@@ -170,7 +172,8 @@ public class StationInfoServiceImpl implements StationInfoService {
                     plantId,
                     0.5f,
                     param.getStart(),
-                    param.getEnd()));
+                    param.getEnd(),
+                    DataState.NORMAL.getValue()));
             result.add(curve);
         }
 

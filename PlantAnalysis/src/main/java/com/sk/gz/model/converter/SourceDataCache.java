@@ -19,7 +19,8 @@ import java.util.List;
 @Data
 @Component
 public class SourceDataCache {
-    private static final float MS_TO_HOUR = 0.001f / 3600f;
+    public static final float MS_TO_HOUR = 0.001f / 3600f;
+    private static final long SOURCE_DATA_INTERVAL = 5000;
     private List<PlantDataInitial> cache = new ArrayList<PlantDataInitial>();
     private PlantDataPretreatment preData = null;
     private Date cacheStartTime = null;
@@ -101,7 +102,7 @@ public class SourceDataCache {
         preData.setTime(cacheStartTime);
 
         //# 区间时间 - ms
-        long duration = cacheEndTime.getTime() - cacheStartTime.getTime();
+        long duration = cacheEndTime.getTime() - cacheStartTime.getTime() + SOURCE_DATA_INTERVAL;
         preData.setDuration(duration);
 
         //# 发电状态
@@ -111,8 +112,16 @@ public class SourceDataCache {
         int state = getState(cacheState);
         preData.setState(state);
 
+
         //# 累计发电量
         double totalPower = cache.get(0).getTotalpower();
+        if (state == DataState.INVALID.getValue()) {
+            if (this.preData != null) {
+                totalPower = this.preData.getTotalpower();
+            } else {
+                totalPower = 0;
+            }
+        }
         preData.setTotalpower(totalPower);
 
         //# 风速风向

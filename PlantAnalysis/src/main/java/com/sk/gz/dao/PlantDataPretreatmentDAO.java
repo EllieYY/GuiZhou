@@ -33,9 +33,9 @@ public interface PlantDataPretreatmentDAO extends MyBatisBaseDao<PlantDataPretre
     CurvePoint findAvgByColumnAndRange(RangeParam param);
 
     void updatePower(@Param("plantId") int plantId,
-                     @Param("invalidState") int invalidState,
                      @Param("sTime") Date sTime,
-                     @Param("eTime") Date eTime);
+                     @Param("eTime") Date eTime,
+                     @Param("maxThre") float maxThreshold);
 
     void powerStatistic(MonthQuotaParam param);
 
@@ -49,10 +49,12 @@ public interface PlantDataPretreatmentDAO extends MyBatisBaseDao<PlantDataPretre
 
     List<HistogramPoint> findHistogramByColumn(@Param("plantId") int plantId,
                                                @Param("xColumn") String column,
-                                               @Param("scaleV") double scale);
+                                               @Param("scaleV") double scale,
+                                               @Param("validState") int valideState);
 
     List<CurvePoint> findCurvePointByTime(@Param("plantId") int plantId,
                                           @Param("scaleV") float scale,
                                           @Param("sTime") Date sTime,
-                                          @Param("eTime") Date eTime);
+                                          @Param("eTime") Date eTime,
+                                          @Param("validState") int valideState);
 }

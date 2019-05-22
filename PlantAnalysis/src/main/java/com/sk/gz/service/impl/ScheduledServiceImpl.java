@@ -117,8 +117,8 @@ public class ScheduledServiceImpl implements ScheduledService {
 
                 //# calculate power for plant
                 Date startUpdateDate = DateUtil.dateAddDays(pre, -1, false);
-                plantDataPretreatmentDAO.updatePower(plantId, DataState.INVALID.getValue(),
-                        startUpdateDate, cur);
+                float maxThreshold = plant.getPowerRating() * SourceDataCache.MS_TO_HOUR;
+                plantDataPretreatmentDAO.updatePower(plantId, startUpdateDate, cur, maxThreshold);
                 log.info("update power, time#" + pre + " ~ " + cur);
             }
 

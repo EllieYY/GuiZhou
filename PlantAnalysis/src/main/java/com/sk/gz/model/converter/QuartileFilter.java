@@ -83,6 +83,7 @@ public class QuartileFilter {
                 rangeMin += scale;
             }
 
+            //# space line.
             filterResults.add(new FilterResult());
         }
 

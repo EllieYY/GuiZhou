@@ -290,6 +290,7 @@
         ceil( ${xColumn} / #{scaleV} ) AS scaleR
       FROM plant_data_pretreatment
       WHERE plantId = #{plantId,jdbcType=INTEGER}
+            and `state` = #{validState}
       ) d
     GROUP BY
       scale
@@ -306,6 +307,7 @@
       FROM plant_data_pretreatment
       WHERE
         plantId = #{plantId,jdbcType=INTEGER} and
+        `state` = #{validState} and
         time &gt; #{sTime} and
         time &lt; #{eTime}
     ) d
@@ -333,31 +335,36 @@
     UPDATE plant_data_pretreatment d
       INNER JOIN (
         SELECT
-         two.plantId plantId,
-         two.time time,
-         two.estimatePower estimatePower,
-         IF
-         ( two.previous = 0, 0, two.current - two.previous ) intervalValue
-         FROM
-         (
-           SELECT
-             one.plantId,
-             one.time,
-             one.estimatePower,
-             IF
-             ( one.totalPower = 0, @one.totalPower, one.totalPower ) current,
-             @one.totalPower AS previous,
-             @one.totalPower := one.totalPower
-           FROM
-             plant_data_pretreatment one,
-             ( SELECT @one.totalPower := 0 ) tmp
-           WHERE
-             one.state != #{invalidState}
-             and one.plantId = #{plantId,jdbcType=INTEGER}
-             and one.time &gt;= #{sTime}
-             and one.time &lt; #{eTime}
-           ORDER BY
-             one.time ASC
+        two.plantId plantId,
+        two.time time,
+        two.estimatePower estimatePower,
+        (
+        CASE
+        WHEN two.previous = 0 THEN 0
+        WHEN two.current &lt; two.previous THEN 0
+        WHEN two.current - two.previous &gt; (#{maxThre} * two.duration * 5) THEN 0
+        ELSE two.current - two.previous
+        END) as intervalValue
+        FROM
+        (
+          SELECT
+          one.plantId,
+          one.time,
+          one.duration,
+          one.estimatePower,
+          IF
+          ( one.totalPower = 0, @one.totalPower, one.totalPower ) current,
+          @one.totalPower AS previous,
+          @one.totalPower := one.totalPower
+          FROM
+            plant_data_pretreatment one,
+            ( SELECT @one.totalPower := 0 ) tmp
+          WHERE
+            one.plantId = #{plantId,jdbcType=INTEGER}
+            and one.time &gt;= #{sTime}
+            and one.time &lt; #{eTime}
+          ORDER BY
+            one.time ASC
          ) two
         ) comb ON d.plantId = comb.plantId
                AND d.time = comb.time

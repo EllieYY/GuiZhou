@@ -22,7 +22,8 @@
   <select id="findAllIndexInfo" resultType="com.sk.gz.model.param.PlantLabel">
     SELECT
       id as "id",
-      name as "name"
+      name as "name",
+      powerRating as "powerRating"
     FROM plant
   </select>
   <select id="findTypeByPlantId" resultType="java.lang.Integer">

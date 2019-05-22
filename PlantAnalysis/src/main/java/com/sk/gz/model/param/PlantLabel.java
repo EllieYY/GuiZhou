@@ -1,5 +1,6 @@
 package com.sk.gz.model.param;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -23,4 +24,7 @@ public class PlantLabel {
     @ApiModelProperty(value = "风机名称")
     @JsonProperty("name")
     private String name;
+
+    @JsonIgnore
+    private float powerRating;
 }
