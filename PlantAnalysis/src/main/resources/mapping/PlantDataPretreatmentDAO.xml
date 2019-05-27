@@ -369,7 +369,8 @@
         ) comb ON d.plantId = comb.plantId
                AND d.time = comb.time
     SET d.actualPower = comb.intervalValue,
-      d.reductivePower = d.estimatePower - comb.intervalValue
+    d.estimatePower = (case when d.estimatePower &lt; comb.intervalValue then comb.intervalValue else d.estimatePower end),
+    d.reductivePower = (case when d.estimatePower &lt; comb.intervalValue then 0 else d.estimatePower - comb.intervalValue end)
     where d.time &gt; #{sTime} and
           d.time &lt; #{eTime}
   </update>

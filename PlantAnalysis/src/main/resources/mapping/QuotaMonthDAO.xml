@@ -145,7 +145,7 @@
       sum( a.validDays ) AS dataValidDays,
       min( a.date ) as startTime,
       now() as endTime,
-      sum( a.actualPower ) AS power,
+      sum( a.actualPower ) AS powerGeneration,
       sum( a.academicPower ) - sum( a.actualPower ) AS reduction,
       CONVERT (
               ( sum( a.academicPower ) - sum( a.actualPower ) ) / sum( a.academicPower ),

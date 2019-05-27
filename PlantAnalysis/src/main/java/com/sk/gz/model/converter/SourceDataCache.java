@@ -19,20 +19,29 @@ import java.util.List;
 @Data
 @Component
 public class SourceDataCache {
+    /** 时间单位转换： ms => hour */
     public static final float MS_TO_HOUR = 0.001f / 3600f;
+
+    /** 原始数据时间间隔 */
     private static final long SOURCE_DATA_INTERVAL = 5000;
+
+    /** 处理不同时间块的中间变量 */
     private List<PlantDataInitial> cache = new ArrayList<PlantDataInitial>();
-    private PlantDataPretreatment preData = null;
     private Date cacheStartTime = null;
     private Date cacheEndTime = null;
     private Date cacheMonthBegin = null;
     private Integer cacheState = null;
     private boolean stateChanged = false;
-    private int plantId;
 
-    public int addData(PlantDataInitial data, long limit, List<CurvePoint> curvePoints, boolean dataEnd) {
+    /** 处理不同风机数据的中间变量 */
+    private int plantId;
+    private PlantDataPretreatment preData = null;
+    private double preDataTotalPower = 0;
+
+    public int addData(PlantDataInitial data, long limit, List<CurvePoint> curvePoints,
+                       boolean dataEnd, float powerRating) {
         //# init catch info
-        if (cacheStartTime == null || cacheState == null || plantId != data.getPlantid()) {
+        if (cacheStartTime == null || cacheState == null) {
             initData(data);
             return 1;
         }
@@ -49,7 +58,7 @@ public class SourceDataCache {
         if (stateChanged ||
                 (datatime.getTime() - cacheStartTime.getTime()) >= limit ||
                 monthBegin.getTime() != cacheMonthBegin.getTime()) {
-            preData = preprocess(curvePoints);
+            preData = preprocess(curvePoints, powerRating);
             initCache(data);
             return 0;
         }
@@ -58,7 +67,7 @@ public class SourceDataCache {
         cacheEndTime = datatime;
 
         if (dataEnd) {
-            preData = preprocess(curvePoints);
+            preData = preprocess(curvePoints, powerRating);
             return 0;
         }
         return 1;
@@ -80,6 +89,11 @@ public class SourceDataCache {
     }
 
     private void initData(PlantDataInitial data) {
+        if (plantId != data.getPlantid()) {
+            preData = null;
+            preDataTotalPower = 0;
+        }
+
         plantId = data.getPlantid();
         cacheStartTime = data.getDatatime();
         cacheEndTime = cacheStartTime;
@@ -89,7 +103,8 @@ public class SourceDataCache {
         cache.add(data);
     }
 
-    private PlantDataPretreatment preprocess(List<CurvePoint> curvePoints) {
+    private PlantDataPretreatment preprocess(List<CurvePoint> curvePoints, float powerRating) {
+        int size = cache.size();
         if (cache.size() < 2 || cacheStartTime == null || cacheState == null) {
             return null;
         }
@@ -116,13 +131,10 @@ public class SourceDataCache {
         //# 累计发电量
         double totalPower = cache.get(0).getTotalpower();
         if (state == DataState.INVALID.getValue()) {
-            if (this.preData != null) {
-                totalPower = this.preData.getTotalpower();
-            } else {
-                totalPower = 0;
-            }
+            totalPower = this.preDataTotalPower;
         }
         preData.setTotalpower(totalPower);
+        this.preDataTotalPower = cache.get(size - 1).getTotalpower();
 
         //# 风速风向
         float wind = (float)(cache.stream().mapToDouble(PlantDataInitial::getAmbwindspeed).average().getAsDouble());
@@ -141,7 +153,7 @@ public class SourceDataCache {
         preData.setBladeangle((float)(cache.stream().mapToDouble(PlantDataInitial::getHubspe).average().getAsDouble()));
 
         //# 计算理论发电量
-        float estimatepower = calculateEstimatepower(wind, curvePoints, duration);
+        float estimatepower = calculateEstimatepower(wind, curvePoints, duration, powerRating);
         preData.setEstimatepower(estimatepower);
 
         //# 默认值
@@ -152,7 +164,7 @@ public class SourceDataCache {
     }
 
     /** 根据功率曲线 */
-    private float calculateEstimatepower(float wind, List<CurvePoint> curvePoints, long msesc) {
+    private float calculateEstimatepower(float wind, List<CurvePoint> curvePoints, long msesc, float powerRating) {
         float power = 0;
         if (curvePoints.size() < 2) {
             return power;
@@ -179,6 +191,8 @@ public class SourceDataCache {
             float powerLen = nowPoint.getPower() - prePoint.getPower();
             power = prePoint.getPower() + powerLen * (wind - prePoint.getWindSpeed() / speedLen);
         }
+
+        power = (power < 0) ? 0 : (power > powerRating ? powerRating : power);
 
         return power * msesc * MS_TO_HOUR;
     }

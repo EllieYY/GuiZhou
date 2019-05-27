@@ -33,6 +33,7 @@ public class DataPrepareController {
                 param.getStartTime(),
                 param.getEndTime(),
                 param.isHis(),
+                param.isReTry(),
                 param.getPathPrefix(),
                 param.getIdBase());
         return ResultBeanUtil.makeOkResp();

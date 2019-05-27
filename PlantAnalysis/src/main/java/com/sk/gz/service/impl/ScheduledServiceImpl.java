@@ -66,17 +66,16 @@ public class ScheduledServiceImpl implements ScheduledService {
         Date today = new Date();
         Date startTime = DateUtil.dateTimeToDate(today);
         Date endTime = DateUtil.dateAddDays(startTime, 1, false);
-        dataTransform(startTime, endTime, false, "/home/export", 30200);
+        dataTransform(startTime, endTime, false, false,"/home/export", 30200);
     }
 
     @Override
-    public void dataTransform(Date startTime, Date endTime, boolean isHis, String pathPrefix, int idBase) {
+    public void dataTransform(Date startTime, Date endTime, boolean isHis, boolean isRetry,
+                              String pathPrefix, int idBase) {
         List<PlantLabel> plants = plantDAO.findAllIndexInfo();
 
-////        // TODO:test
 //        plants.clear();
-//        plants.add(new PlantLabel(30210, "测试机组"));
-//        plants.add(new PlantLabel(30201, "测试机组"));
+//        plants.add(new PlantLabel(30221, "机组21", 1500));
 
         // 文件存放规则适配
         String fileDatePattern = isHis ? "yyyy-MM/" : "yyyy-MM-dd/";
@@ -107,7 +106,7 @@ public class ScheduledServiceImpl implements ScheduledService {
                 log.info("plant#" + filePath + fileName + ", data size = " + sourceData.size());
 
                 //#2 data verify: to 10mins data
-                pretreatment(plantId, sourceData, isHis);
+                pretreatment(plantId, sourceData, isRetry, plant.getPowerRating());
 
                 //#3 filter
                 filter(plantId);
@@ -131,10 +130,10 @@ public class ScheduledServiceImpl implements ScheduledService {
     }
 
     /** 预处理 */
-    private void pretreatment(int plantId, List<PlantDataInitial> sourceData, boolean isHis) {
-        // 【重要前提】：功率曲线已经存在，历史数据使用理论功率曲线
+    private void pretreatment(int plantId, List<PlantDataInitial> sourceData, boolean isRetry, float powerRating) {
+        // 【重要前提】：功率曲线已经存在，实际功率曲线未生成时（isRetry = false）使用理论功率曲线
         List<CurvePoint> curvePoints = new ArrayList<>();
-        if (isHis) {
+        if (!isRetry) {
             int plantType = plantDAO.findTypeByPlantId(plantId);
             curvePoints = designPowerCurveDAO.findByTypeAndWindASC(plantType);
         } else {
@@ -156,7 +155,7 @@ public class ScheduledServiceImpl implements ScheduledService {
                 data.setState(PowerState.OFF_LINE.getValue());
             }
 
-            if (sourceDataCache.addData(data, PREPROCESS_DATA_LENGTH, curvePoints, isDataEnd) == 0) {
+            if (sourceDataCache.addData(data, PREPROCESS_DATA_LENGTH, curvePoints, isDataEnd, powerRating) == 0) {
                 pretreatmentDataCache.add(sourceDataCache.getPreData(), isDataEnd);
             }
         }

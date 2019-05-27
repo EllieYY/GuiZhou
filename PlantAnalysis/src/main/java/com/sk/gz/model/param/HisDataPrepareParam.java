@@ -24,6 +24,9 @@ public class HisDataPrepareParam {
     @JsonProperty("hisFlag")
     private boolean his;
 
+    @JsonProperty("reTry")
+    private boolean reTry;
+
     @JsonProperty("pathPrefix")
     private String pathPrefix;
 
